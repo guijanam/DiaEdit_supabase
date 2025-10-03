@@ -169,8 +169,8 @@
                     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
                         <div className="bg-white rounded-xl shadow-2xl p-8 w-full max-w-md">
                             <div className="text-center mb-8">
-                                <h1 className="text-3xl font-bold text-gray-800 mb-2">승무소 관리 시스템</h1>
-                                <p className="text-gray-600">승무소별 데이터 관리</p>
+                                <h1 className="text-3xl font-bold text-gray-800 mb-2">승무소 Dia관리 시스템</h1>
+                                <p className="text-gray-600">승무소별로 편하게 수정하세요</p>
                             </div>
                             
                             {error && (
@@ -191,7 +191,7 @@
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-2">비밀번호</label>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">비밀번호(문의:02b2min2@kakao.com)</label>
                                     <input
                                         type="password"
                                         value={password}
@@ -582,8 +582,8 @@
 
                     {editing && (
                         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-                            <div className="bg-white rounded-xl p-6 w-full max-w-2xl h-[85vh] md:max-h-[90vh] overflow-y-auto flex flex-col">
-                                <div className="flex justify-between mb-6">
+                            <div className="bg-white rounded-xl p-6 w-full max-w-2xl h-[85vh] md:max-h-[90vh] overflow-hidden flex flex-col">
+                                <div className="flex-shrink-0 flex justify-between mb-6">
                                     <h2 className="text-2xl font-bold">
                                         {tab === 'office' && editing.editField === 'office_code' && '승무소 코드 수정'}
                                         {tab === 'office' && editing.editField === 'dia_turns1' && '기관사 수정'}
@@ -598,7 +598,7 @@
                                     </button>
                                 </div>
 
-                                <div className="space-y-4">
+                                <div className="flex-grow space-y-4 overflow-y-auto pr-2">
                                     {tab === 'office' ? (
                                         <>
                                             {editing.editField === 'office_code' && (
@@ -620,7 +620,7 @@
                                                         value={Array.isArray(editing.dia_turns1) ? editing.dia_turns1.join(',') : editing.dia_turns1 || ''}
                                                         onChange={(e) => setEditing({...editing, dia_turns1: e.target.value.split(',').map(s => s.trim()).filter(Boolean)})}
                                                         className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                                                        rows="3"
+                                                        rows="10"
                                                     />
                                                 </div>
                                             )}
@@ -632,7 +632,7 @@
                                                         value={Array.isArray(editing.dia_turns2) ? editing.dia_turns2.join(',') : editing.dia_turns2 || ''}
                                                         onChange={(e) => setEditing({...editing, dia_turns2: e.target.value.split(',').map(s => s.trim()).filter(Boolean)})}
                                                         className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                                                        rows="3"
+                                                        rows="10"
                                                     />
                                                 </div>
                                             )}
@@ -644,7 +644,7 @@
                                                         value={Array.isArray(editing.dia_turns3) ? editing.dia_turns3.join(',') : editing.dia_turns3 || ''}
                                                         onChange={(e) => setEditing({...editing, dia_turns3: e.target.value.split(',').map(s => s.trim()).filter(Boolean)})}
                                                         className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                                                        rows="3"
+                                                        rows="10"
                                                     />
                                                 </div>
                                             )}
@@ -656,7 +656,7 @@
                                                         value={Array.isArray(editing.sub_turns) ? editing.sub_turns.join(',') : editing.sub_turns || ''}
                                                         onChange={(e) => setEditing({...editing, sub_turns: e.target.value.split(',').map(s => s.trim()).filter(Boolean)})}
                                                         className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                                                        rows="3"
+                                                        rows="10"
                                                     />
                                                 </div>
                                             )}
@@ -668,7 +668,7 @@
                                                         value={Array.isArray(editing.dia_selects) ? editing.dia_selects.join(',') : editing.dia_selects || ''}
                                                         onChange={(e) => setEditing({...editing, dia_selects: e.target.value.split(',').map(s => s.trim()).filter(Boolean)})}
                                                         className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                                                        rows="3"
+                                                        rows="10"
                                                     />
                                                 </div>
                                             )}
@@ -766,21 +766,21 @@
                                             </div>
                                         </>
                                     )}
-
-                                    <div className="flex gap-3 pt-4 border-t">
-                                        <button
-                                            onClick={() => tab === 'office' ? saveOffice(editing) : saveDia(editing)}
-                                            className="flex-1 bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 font-medium"
-                                        >
-                                            저장
-                                        </button>
-                                        <button
-                                            onClick={() => setEditing(null)}
-                                            className="flex-1 bg-gray-200 py-3 rounded-lg hover:bg-gray-300 font-medium"
-                                        >
-                                            취소
-                                        </button>
-                                    </div>
+                                </div>
+                                
+                                <div className="flex-shrink-0 flex gap-3 pt-4 border-t mt-4">
+                                    <button
+                                        onClick={() => tab === 'office' ? saveOffice(editing) : saveDia(editing)}
+                                        className="flex-1 bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 font-medium"
+                                    >
+                                        저장
+                                    </button>
+                                    <button
+                                        onClick={() => setEditing(null)}
+                                        className="flex-1 bg-gray-200 py-3 rounded-lg hover:bg-gray-300 font-medium"
+                                    >
+                                        취소
+                                    </button>
                                 </div>
                             </div>
                         </div>
