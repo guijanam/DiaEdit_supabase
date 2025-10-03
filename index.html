@@ -406,46 +406,101 @@
                                             <div className="block md:hidden divide-y">
                                                 {filteredDias.map(dia => (
                                                     <div key={dia.id} className="p-3 hover:bg-gray-50">
-                                                        <div className="flex items-start justify-between mb-2">
-                                                            <div className="flex-1">
-                                                                <div className="font-semibold text-base text-gray-900 mb-1">
+                                                        {/* 1줄: 다이아ID + 타입 + 버튼 */}
+                                                        <div className="flex items-center justify-between mb-3">
+                                                            <div className="flex items-center gap-2">
+                                                                <span className="font-bold text-lg text-gray-900">
                                                                     {dia.dia_id}
-                                                                </div>
-                                                                <div className="flex items-center gap-2 mb-1 flex-wrap">
-                                                                    <span className="inline-block px-2 py-0.5 bg-blue-100 text-blue-700 rounded text-xs font-medium whitespace-nowrap">
-                                                                        {dia.type_name}
-                                                                    </span>
-                                                                    {dia.work_time && (
-                                                                        <span className="text-xs text-gray-600">출근 {dia.work_time}</span>
-                                                                    )}
-                                                                    {dia.total_time && (
-                                                                        <span className="text-xs text-gray-600">총근무 {dia.total_time}</span>
-                                                                    )}
-                                                                </div>
-                                                                <div className="text-xs text-gray-500 space-y-0.5">
-                                                                    {dia.first_time && (
-                                                                        <div>전반사업: {dia.first_time} {dia.num_tr1 && `(${dia.num_tr1})`}</div>
-                                                                    )}
-                                                                    {dia.second_time && (
-                                                                        <div>후반사업: {dia.second_time} {dia.num_tr2 && `(${dia.num_tr2})`}</div>
-                                                                    )}
-                                                                </div>
+                                                                </span>
+                                                                <span className="inline-block px-2 py-1 bg-blue-100 text-blue-700 rounded text-xs font-medium">
+                                                                    {dia.type_name}
+                                                                </span>
                                                             </div>
-                                                            <div className="flex gap-1 ml-2">
+                                                            <div className="flex gap-1">
                                                                 <button
                                                                     onClick={() => setEditing(dia)}
-                                                                    className="px-2 py-1 text-xs text-blue-600 hover:bg-blue-50 rounded whitespace-nowrap"
+                                                                    className="px-3 py-1 text-xs text-blue-600 bg-blue-50 hover:bg-blue-100 rounded font-medium"
                                                                 >
                                                                     수정
                                                                 </button>
                                                                 <button
                                                                     onClick={() => deleteDia(dia.id)}
-                                                                    className="px-2 py-1 text-xs text-red-600 hover:bg-red-50 rounded whitespace-nowrap"
+                                                                    className="px-3 py-1 text-xs text-red-600 bg-red-50 hover:bg-red-100 rounded font-medium"
                                                                 >
                                                                     삭제
                                                                 </button>
                                                             </div>
                                                         </div>
+
+                                                        {/* 2줄: 출근시간 + 총근무시간 */}
+                                                        <div className="bg-gray-50 rounded-lg p-2 mb-2">
+                                                            <div className="flex items-center justify-between text-sm">
+                                                                <div className="flex items-center gap-4">
+                                                                    {dia.work_time && (
+                                                                        <div>
+                                                                            <span className="text-gray-500 text-xs">출근</span>
+                                                                            <span className="ml-1 font-semibold text-gray-900">{dia.work_time}</span>
+                                                                        </div>
+                                                                    )}
+                                                                    {dia.total_time && (
+                                                                        <div>
+                                                                            <span className="text-gray-500 text-xs">총근무</span>
+                                                                            <span className="ml-1 font-semibold text-gray-900">{dia.total_time}</span>
+                                                                        </div>
+                                                                    )}
+                                                                </div>
+                                                            </div>
+                                                        </div>
+
+                                                        {/* 3줄: 전반사업 시간 */}
+                                                        {dia.first_time && (
+                                                            <div className="bg-blue-50 rounded-lg p-2 mb-1">
+                                                                <div className="flex items-center justify-between">
+                                                                    <span className="text-xs font-medium text-blue-600">전반사업</span>
+                                                                    <span className="font-semibold text-gray-900">{dia.first_time}</span>
+                                                                </div>
+                                                            </div>
+                                                        )}
+
+                                                        {/* 4줄: 전반 열차번호 */}
+                                                        {dia.num_tr1 && (
+                                                            <div className="bg-blue-50 rounded-lg p-2 mb-2">
+                                                                <div className="flex items-center justify-between">
+                                                                    <span className="text-xs font-medium text-blue-600">전반 열번</span>
+                                                                    <span className="font-semibold text-gray-900">{dia.num_tr1}</span>
+                                                                </div>
+                                                            </div>
+                                                        )}
+
+                                                        {/* 5줄: 후반사업 시간 */}
+                                                        {dia.second_time && (
+                                                            <div className="bg-green-50 rounded-lg p-2 mb-1">
+                                                                <div className="flex items-center justify-between">
+                                                                    <span className="text-xs font-medium text-green-600">후반사업</span>
+                                                                    <span className="font-semibold text-gray-900">{dia.second_time}</span>
+                                                                </div>
+                                                            </div>
+                                                        )}
+
+                                                        {/* 6줄: 후반 열차번호 */}
+                                                        {dia.num_tr2 && (
+                                                            <div className="bg-green-50 rounded-lg p-2 mb-2">
+                                                                <div className="flex items-center justify-between">
+                                                                    <span className="text-xs font-medium text-green-600">후반 열번</span>
+                                                                    <span className="font-semibold text-gray-900">{dia.num_tr2}</span>
+                                                                </div>
+                                                            </div>
+                                                        )}
+
+                                                        {/* 7줄: 세 번째 시간 (있을 경우) */}
+                                                        {dia.third_time && (
+                                                            <div className="bg-purple-50 rounded-lg p-2">
+                                                                <div className="flex items-center justify-between">
+                                                                    <span className="text-xs font-medium text-purple-600">세 번째</span>
+                                                                    <span className="font-semibold text-gray-900">{dia.third_time}</span>
+                                                                </div>
+                                                            </div>
+                                                        )}
                                                     </div>
                                                 ))}
                                             </div>
@@ -597,22 +652,94 @@
                                     ) : (
                                         <>
                                             <div className="grid grid-cols-2 gap-4">
-                                                <input placeholder="다이아 ID" value={editing.dia_id || ''} onChange={(e) => setEditing({...editing, dia_id: e.target.value})} className="w-full px-4 py-2 border rounded-lg focus:outline-none" />
-                                                <input placeholder="타입명" value={editing.type_name || ''} onChange={(e) => setEditing({...editing, type_name: e.target.value})} className="w-full px-4 py-2 border rounded-lg focus:outline-none" />
+                                                <div>
+                                                    <label className="block text-sm font-medium text-gray-700 mb-2">다이아 ID *</label>
+                                                    <input 
+                                                        placeholder="예: 대1" 
+                                                        value={editing.dia_id || ''} 
+                                                        onChange={(e) => setEditing({...editing, dia_id: e.target.value})} 
+                                                        className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none" 
+                                                    />
+                                                </div>
+                                                <div>
+                                                    <label className="block text-sm font-medium text-gray-700 mb-2">타입명 *</label>
+                                                    <input 
+                                                        placeholder="예: 평일" 
+                                                        value={editing.type_name || ''} 
+                                                        onChange={(e) => setEditing({...editing, type_name: e.target.value})} 
+                                                        className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none" 
+                                                    />
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-700 mb-2">출근시간</label>
+                                                <input 
+                                                    placeholder="예: 05:00" 
+                                                    value={editing.work_time || ''} 
+                                                    onChange={(e) => setEditing({...editing, work_time: e.target.value})} 
+                                                    className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none" 
+                                                />
                                             </div>
                                             <div className="grid grid-cols-2 gap-4">
-                                                <input placeholder="첫 번째 시간" value={editing.first_time || ''} onChange={(e) => setEditing({...editing, first_time: e.target.value})} className="w-full px-4 py-2 border rounded-lg focus:outline-none" />
-                                                <input placeholder="두 번째 시간" value={editing.second_time || ''} onChange={(e) => setEditing({...editing, second_time: e.target.value})} className="w-full px-4 py-2 border rounded-lg focus:outline-none" />
+                                                <div>
+                                                    <label className="block text-sm font-medium text-gray-700 mb-2">전반사업 시간</label>
+                                                    <input 
+                                                        placeholder="예: 05:30" 
+                                                        value={editing.first_time || ''} 
+                                                        onChange={(e) => setEditing({...editing, first_time: e.target.value})} 
+                                                        className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none" 
+                                                    />
+                                                </div>
+                                                <div>
+                                                    <label className="block text-sm font-medium text-gray-700 mb-2">전반 열차번호</label>
+                                                    <input 
+                                                        placeholder="예: 101" 
+                                                        value={editing.num_tr1 || ''} 
+                                                        onChange={(e) => setEditing({...editing, num_tr1: e.target.value})} 
+                                                        className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none" 
+                                                    />
+                                                </div>
                                             </div>
                                             <div className="grid grid-cols-2 gap-4">
-                                                <input placeholder="번호 TR1" value={editing.num_tr1 || ''} onChange={(e) => setEditing({...editing, num_tr1: e.target.value})} className="w-full px-4 py-2 border rounded-lg focus:outline-none" />
-                                                <input placeholder="번호 TR2" value={editing.num_tr2 || ''} onChange={(e) => setEditing({...editing, num_tr2: e.target.value})} className="w-full px-4 py-2 border rounded-lg focus:outline-none" />
+                                                <div>
+                                                    <label className="block text-sm font-medium text-gray-700 mb-2">후반사업 시간</label>
+                                                    <input 
+                                                        placeholder="예: 13:30" 
+                                                        value={editing.second_time || ''} 
+                                                        onChange={(e) => setEditing({...editing, second_time: e.target.value})} 
+                                                        className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none" 
+                                                    />
+                                                </div>
+                                                <div>
+                                                    <label className="block text-sm font-medium text-gray-700 mb-2">후반 열차번호</label>
+                                                    <input 
+                                                        placeholder="예: 201" 
+                                                        value={editing.num_tr2 || ''} 
+                                                        onChange={(e) => setEditing({...editing, num_tr2: e.target.value})} 
+                                                        className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none" 
+                                                    />
+                                                </div>
                                             </div>
                                             <div className="grid grid-cols-2 gap-4">
-                                                <input placeholder="총 시간" value={editing.total_time || ''} onChange={(e) => setEditing({...editing, total_time: e.target.value})} className="w-full px-4 py-2 border rounded-lg focus:outline-none" />
-                                                <input placeholder="근무 시간" value={editing.work_time || ''} onChange={(e) => setEditing({...editing, work_time: e.target.value})} className="w-full px-4 py-2 border rounded-lg focus:outline-none" />
+                                                <div>
+                                                    <label className="block text-sm font-medium text-gray-700 mb-2">총 근무시간</label>
+                                                    <input 
+                                                        placeholder="예: 08:00" 
+                                                        value={editing.total_time || ''} 
+                                                        onChange={(e) => setEditing({...editing, total_time: e.target.value})} 
+                                                        className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none" 
+                                                    />
+                                                </div>
+                                                <div>
+                                                    <label className="block text-sm font-medium text-gray-700 mb-2">세 번째 시간 (선택)</label>
+                                                    <input 
+                                                        placeholder="예: 21:30" 
+                                                        value={editing.third_time || ''} 
+                                                        onChange={(e) => setEditing({...editing, third_time: e.target.value})} 
+                                                        className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none" 
+                                                    />
+                                                </div>
                                             </div>
-                                            <input placeholder="세 번째 시간 (선택)" value={editing.third_time || ''} onChange={(e) => setEditing({...editing, third_time: e.target.value})} className="w-full px-4 py-2 border rounded-lg focus:outline-none" />
                                         </>
                                     )}
 
