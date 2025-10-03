@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>승무소 관리 시스템</title>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body>
+    <div id="root"></div>
+    
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+        
+        const SUPABASE_URL = 'https://srsyxsddjbojnwvjoera.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNyc3l4c2RkamJvam53dmpvZXJhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg3NjY4NTEsImV4cCI6MjA3NDM0Mjg1MX0.wmTrMzDqBs10qL_wBeJJQTjQMuCuvfAmY6_eW2brqT8';
+
+        function App() {
+            const [isAuth, setIsAuth] = useState(false);
+            const [officeName, setOfficeName] = useState('');
+            const [password, setPassword] = useState('');
+            const [error, setError] = useState('');
+            const [officeInfo, setOfficeInfo] = useState(null);
+            const [dias, setDias] = useState([]);
+            const [tab, setTab] = useState('office');
+            const [diaTypeTab, setDiaTypeTab] = useState('all'); // 다이아 타입 탭
+            const [editing, setEditing] = useState(null);
+            const [search, setSearch] = useState('');
+            const [loading, setLoading] = useState(false);
+
+            const login = async () => {
+                setError('');
+                setLoading(true);
+                try {
+                    const res = await fetch(`${SUPABASE_URL}/functions/v1/authenticate`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+                            'apikey': SUPABASE_ANON_KEY
+                        },
+                        body: JSON.stringify({ office_name: officeName, password })
+                    });
+                    const data = await res.json();
+                    if (data.success) {
+                        setIsAuth(true);
+                        await loadData();
+                    } else {
+                        setError('승무소 이름 또는 비밀번호가 일치하지 않습니다.');
+                    }
+                } catch (e) {
+                    setError('인증 오류: ' + e.message);
+                } finally {
+                    setLoading(false);
+                }
+            };
+
+            const loadData = async () => {
+                setLoading(true);
+                try {
+                    const officeRes = await fetch(
+                        `${SUPABASE_URL}/rest/v1/office?office_name=eq.${encodeURIComponent(officeName)}&select=*`,
+                        { headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': `Bearer ${SUPABASE_ANON_KEY}` } }
+                    );
+                    const officeData = await officeRes.json();
+                    if (officeData?.[0]) setOfficeInfo(officeData[0]);
+
+                    const diaRes = await fetch(
+                        `${SUPABASE_URL}/rest/v1/dia?office_name=eq.${encodeURIComponent(officeName)}&select=*&order=id`,
+                        { headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': `Bearer ${SUPABASE_ANON_KEY}` } }
+                    );
+                    const diaData = await diaRes.json();
+                    setDias(diaData || []);
+                } catch (e) {
+                    alert('데이터 로드 오류: ' + e.message);
+                } finally {
+                    setLoading(false);
+                }
+            };
+
+            const saveOffice = async (item) => {
+                try {
+                    const res = await fetch(
+                        `${SUPABASE_URL}/rest/v1/office?office_name=eq.${encodeURIComponent(officeName)}`,
+                        {
+                            method: 'PATCH',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'apikey': SUPABASE_ANON_KEY,
+                                'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+                                'Prefer': 'return=minimal'
+                            },
+                            body: JSON.stringify({
+                                office_code: item.office_code,
+                                admin_password: item.admin_password,
+                                dia_turns1: Array.isArray(item.dia_turns1) ? item.dia_turns1 : [],
+                                dia_turns2: Array.isArray(item.dia_turns2) ? item.dia_turns2 : [],
+                                dia_turns3: Array.isArray(item.dia_turns3) ? item.dia_turns3 : [],
+                                sub_turns: Array.isArray(item.sub_turns) ? item.sub_turns : [],
+                                dia_selects: Array.isArray(item.dia_selects) ? item.dia_selects : [],
+                            })
+                        }
+                    );
+                    if (res.ok) {
+                        alert('저장 완료!');
+                        setEditing(null);
+                        loadData();
+                    } else {
+                        alert('저장 실패');
+                    }
+                } catch (e) {
+                    alert('오류: ' + e.message);
+                }
+            };
+
+            const saveDia = async (item) => {
+                try {
+                    const method = item.id ? 'PATCH' : 'POST';
+                    const url = item.id 
+                        ? `${SUPABASE_URL}/rest/v1/dia?id=eq.${item.id}&office_name=eq.${encodeURIComponent(officeName)}`
+                        : `${SUPABASE_URL}/rest/v1/dia`;
+                    
+                    const res = await fetch(url, {
+                        method,
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'apikey': SUPABASE_ANON_KEY,
+                            'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+                            'Prefer': 'return=minimal'
+                        },
+                        body: JSON.stringify({ ...item, office_name: officeName })
+                    });
+                    
+                    if (res.ok) {
+                        alert(item.id ? '수정 완료!' : '추가 완료!');
+                        setEditing(null);
+                        loadData();
+                    } else {
+                        alert('실패');
+                    }
+                } catch (e) {
+                    alert('오류: ' + e.message);
+                }
+            };
+
+            const deleteDia = async (id) => {
+                if (!confirm('삭제하시겠습니까?')) return;
+                try {
+                    const res = await fetch(
+                        `${SUPABASE_URL}/rest/v1/dia?id=eq.${id}&office_name=eq.${encodeURIComponent(officeName)}`,
+                        { method: 'DELETE', headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': `Bearer ${SUPABASE_ANON_KEY}` } }
+                    );
+                    if (res.ok) {
+                        alert('삭제 완료!');
+                        loadData();
+                    } else {
+                        alert('삭제 실패');
+                    }
+                } catch (e) {
+                    alert('오류: ' + e.message);
+                }
+            };
+
+            if (!isAuth) {
+                return (
+                    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
+                        <div className="bg-white rounded-xl shadow-2xl p-8 w-full max-w-md">
+                            <div className="text-center mb-8">
+                                <h1 className="text-3xl font-bold text-gray-800 mb-2">승무소 관리 시스템</h1>
+                                <p className="text-gray-600">승무소별 데이터 관리</p>
+                            </div>
+                            
+                            {error && (
+                                <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+                                    {error}
+                                </div>
+                            )}
+
+                            <div className="space-y-4">
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">승무소 이름</label>
+                                    <input
+                                        type="text"
+                                        value={officeName}
+                                        onChange={(e) => setOfficeName(e.target.value)}
+                                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                                        placeholder="예: 동대문승무소"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">비밀번호</label>
+                                    <input
+                                        type="password"
+                                        value={password}
+                                        onChange={(e) => setPassword(e.target.value)}
+                                        onKeyPress={(e) => e.key === 'Enter' && login()}
+                                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                                        placeholder="••••••••"
+                                    />
+                                </div>
+                                <button
+                                    onClick={login}
+                                    disabled={loading || !officeName || !password}
+                                    className="w-full bg-blue-600 text-white py-3 rounded-lg font-medium hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition shadow-lg"
+                                >
+                                    {loading ? '인증 중...' : '로그인'}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                );
+            }
+
+            // 자연스러운 정렬 함수
+            const naturalSort = (a, b) => {
+                const aDiaId = a.dia_id || '';
+                const bDiaId = b.dia_id || '';
+                
+                // 숫자와 텍스트 분리
+                const splitId = (str) => {
+                    const match = str.match(/^([가-힣]*)(\d+)$/);
+                    if (match) {
+                        return { text: match[1], num: parseInt(match[2], 10) };
+                    }
+                    // 순수 숫자인 경우
+                    const numMatch = str.match(/^(\d+)$/);
+                    if (numMatch) {
+                        return { text: '', num: parseInt(numMatch[1], 10) };
+                    }
+                    return { text: str, num: 0 };
+                };
+                
+                const aParts = splitId(aDiaId);
+                const bParts = splitId(bDiaId);
+                
+                // 텍스트 부분 비교 (없으면 숫자가 먼저)
+                if (aParts.text !== bParts.text) {
+                    if (!aParts.text) return -1;
+                    if (!bParts.text) return 1;
+                    return aParts.text.localeCompare(bParts.text);
+                }
+                
+                // 숫자 부분 비교
+                return aParts.num - bParts.num;
+            };
+
+            // 다이아 타입별 분류 및 정렬
+            const diaTypes = ['all', ...new Set(dias.map(d => d.type_name).filter(Boolean))];
+            const filteredByType = diaTypeTab === 'all' 
+                ? dias 
+                : dias.filter(d => d.type_name === diaTypeTab);
+            const filteredDias = filteredByType
+                .filter(d => d.dia_id?.toLowerCase().includes(search.toLowerCase()))
+                .sort(naturalSort);
+
+            return (
+                <div className="min-h-screen bg-gray-50">
+                    <div className="bg-white shadow border-b">
+                        <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
+                            <div>
+                                <h1 className="text-2xl font-bold text-gray-800">{officeName}</h1>
+                                <p className="text-sm text-gray-500">데이터 관리</p>
+                            </div>
+                            <button
+                                onClick={() => { setIsAuth(false); setOfficeName(''); setPassword(''); }}
+                                className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 text-sm"
+                            >
+                                로그아웃
+                            </button>
+                        </div>
+                    </div>
+
+                    <div className="max-w-7xl mx-auto px-4 py-6">
+                        <div className="bg-white rounded-lg shadow-lg">
+                            <div className="flex border-b">
+                                <button
+                                    onClick={() => setTab('office')}
+                                    className={`px-6 py-4 font-medium ${tab === 'office' ? 'border-b-2 border-blue-500 text-blue-600 bg-blue-50' : 'text-gray-600 hover:bg-gray-50'}`}
+                                >
+                                    승무소 정보
+                                </button>
+                                <button
+                                    onClick={() => setTab('dia')}
+                                    className={`px-6 py-4 font-medium ${tab === 'dia' ? 'border-b-2 border-blue-500 text-blue-600 bg-blue-50' : 'text-gray-600 hover:bg-gray-50'}`}
+                                >
+                                    다이아 관리 ({dias.length})
+                                </button>
+                            </div>
+
+                            {tab === 'office' && officeInfo && (
+                                <div className="p-6">
+                                    <div className="flex justify-between items-center mb-4">
+                                        <h2 className="text-xl font-semibold">승무소 기본 정보</h2>
+                                        <button
+                                            onClick={() => setEditing(officeInfo)}
+                                            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                                        >
+                                            수정
+                                        </button>
+                                    </div>
+
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div className="p-4 bg-gray-50 rounded-lg">
+                                            <p className="text-sm text-gray-600 mb-1">승무소명</p>
+                                            <p className="text-lg font-semibold">{officeInfo.office_name}</p>
+                                        </div>
+                                        <div className="p-4 bg-gray-50 rounded-lg">
+                                            <p className="text-sm text-gray-600 mb-1">승무소 코드</p>
+                                            <p className="text-lg font-semibold">{officeInfo.office_code || '-'}</p>
+                                        </div>
+                                        <div className="p-4 bg-gray-50 rounded-lg">
+                                            <p className="text-sm text-gray-600 mb-1">다이아 차례 1</p>
+                                            <p className="text-sm font-medium text-gray-800">
+                                                {Array.isArray(officeInfo.dia_turns1) && officeInfo.dia_turns1.length > 0
+                                                    ? officeInfo.dia_turns1.join(', ')
+                                                    : '-'}
+                                            </p>
+                                        </div>
+                                        <div className="p-4 bg-gray-50 rounded-lg">
+                                            <p className="text-sm text-gray-600 mb-1">다이아 차례 2</p>
+                                            <p className="text-sm font-medium text-gray-800">
+                                                {Array.isArray(officeInfo.dia_turns2) && officeInfo.dia_turns2.length > 0
+                                                    ? officeInfo.dia_turns2.join(', ')
+                                                    : '-'}
+                                            </p>
+                                        </div>
+                                        <div className="p-4 bg-gray-50 rounded-lg">
+                                            <p className="text-sm text-gray-600 mb-1">다이아 차례 3</p>
+                                            <p className="text-sm font-medium text-gray-800">
+                                                {Array.isArray(officeInfo.dia_turns3) && officeInfo.dia_turns3.length > 0
+                                                    ? officeInfo.dia_turns3.join(', ')
+                                                    : '-'}
+                                            </p>
+                                        </div>
+                                        <div className="p-4 bg-gray-50 rounded-lg">
+                                            <p className="text-sm text-gray-600 mb-1">예비 차례</p>
+                                            <p className="text-sm font-medium text-gray-800">
+                                                {Array.isArray(officeInfo.sub_turns) && officeInfo.sub_turns.length > 0
+                                                    ? officeInfo.sub_turns.join(', ')
+                                                    : '-'}
+                                            </p>
+                                        </div>
+                                        <div className="p-4 bg-gray-50 rounded-lg col-span-2">
+                                            <p className="text-sm text-gray-600 mb-1">다이아 선택</p>
+                                            <p className="text-sm font-medium text-gray-800">
+                                                {Array.isArray(officeInfo.dia_selects) && officeInfo.dia_selects.length > 0
+                                                    ? officeInfo.dia_selects.join(', ')
+                                                    : '-'}
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+
+                            {tab === 'dia' && (
+                                <div>
+                                    {/* 다이아 타입별 탭 */}
+                                    <div className="border-b bg-gray-50 px-2 md:px-4 pt-4 overflow-x-auto">
+                                        <div className="flex gap-2 min-w-max">
+                                            {diaTypes.map(type => (
+                                                <button
+                                                    key={type}
+                                                    onClick={() => setDiaTypeTab(type)}
+                                                    className={`px-3 md:px-4 py-2 font-medium rounded-t-lg transition text-sm md:text-base whitespace-nowrap ${
+                                                        diaTypeTab === type
+                                                            ? 'bg-white text-blue-600 border-t-2 border-blue-500'
+                                                            : 'text-gray-600 hover:bg-gray-100'
+                                                    }`}
+                                                >
+                                                    {type === 'all' ? '전체' : type} 
+                                                    <span className="ml-1 text-xs md:text-sm">
+                                                        ({type === 'all' ? dias.length : dias.filter(d => d.type_name === type).length})
+                                                    </span>
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+
+                                    <div className="p-2 md:p-4 flex flex-col md:flex-row gap-2 md:gap-4 bg-gray-50 border-b">
+                                        <input
+                                            type="text"
+                                            value={search}
+                                            onChange={(e) => setSearch(e.target.value)}
+                                            placeholder="다이아 ID로 검색..."
+                                            className="flex-1 px-3 md:px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none text-sm md:text-base"
+                                        />
+                                        <button
+                                            onClick={() => setEditing({ office_name: officeName, type_name: diaTypeTab === 'all' ? '' : diaTypeTab })}
+                                            className="px-3 md:px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 whitespace-nowrap text-sm md:text-base"
+                                        >
+                                            + 추가
+                                        </button>
+                                    </div>
+
+                                    {/* 모바일과 데스크톱 모두 필드명을 한글로 변경 */}
+                                    {filteredDias.length === 0 ? (
+                                        <div className="p-4 md:p-8 text-center text-gray-500 text-sm md:text-base">
+                                            등록된 다이아가 없습니다.
+                                        </div>
+                                    ) : (
+                                        <>
+                                            {/* 모바일 카드 뷰 */}
+                                            <div className="block md:hidden divide-y">
+                                                {filteredDias.map(dia => (
+                                                    <div key={dia.id} className="p-3 hover:bg-gray-50">
+                                                        <div className="flex items-start justify-between mb-2">
+                                                            <div className="flex-1">
+                                                                <div className="font-semibold text-base text-gray-900 mb-1">
+                                                                    {dia.dia_id}
+                                                                </div>
+                                                                <div className="flex items-center gap-2 mb-1 flex-wrap">
+                                                                    <span className="inline-block px-2 py-0.5 bg-blue-100 text-blue-700 rounded text-xs font-medium whitespace-nowrap">
+                                                                        {dia.type_name}
+                                                                    </span>
+                                                                    {dia.work_time && (
+                                                                        <span className="text-xs text-gray-600">출근 {dia.work_time}</span>
+                                                                    )}
+                                                                    {dia.total_time && (
+                                                                        <span className="text-xs text-gray-600">총근무 {dia.total_time}</span>
+                                                                    )}
+                                                                </div>
+                                                                <div className="text-xs text-gray-500 space-y-0.5">
+                                                                    {dia.first_time && (
+                                                                        <div>전반사업: {dia.first_time} {dia.num_tr1 && `(${dia.num_tr1})`}</div>
+                                                                    )}
+                                                                    {dia.second_time && (
+                                                                        <div>후반사업: {dia.second_time} {dia.num_tr2 && `(${dia.num_tr2})`}</div>
+                                                                    )}
+                                                                </div>
+                                                            </div>
+                                                            <div className="flex gap-1 ml-2">
+                                                                <button
+                                                                    onClick={() => setEditing(dia)}
+                                                                    className="px-2 py-1 text-xs text-blue-600 hover:bg-blue-50 rounded whitespace-nowrap"
+                                                                >
+                                                                    수정
+                                                                </button>
+                                                                <button
+                                                                    onClick={() => deleteDia(dia.id)}
+                                                                    className="px-2 py-1 text-xs text-red-600 hover:bg-red-50 rounded whitespace-nowrap"
+                                                                >
+                                                                    삭제
+                                                                </button>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+
+                                            {/* 데스크톱 테이블 뷰 */}
+                                            <div className="hidden md:block overflow-x-auto">
+                                                <table className="w-full">
+                                                    <thead className="bg-gray-100">
+                                                        <tr>
+                                                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase">다이아ID</th>
+                                                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase">타입</th>
+                                                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase">출근시간</th>
+                                                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase">전반사업</th>
+                                                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase">후반사업</th>
+                                                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase">총근무</th>
+                                                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase">관리</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody className="divide-y">
+                                                        {filteredDias.map(dia => (
+                                                            <tr key={dia.id} className="hover:bg-gray-50">
+                                                                <td className="px-4 py-3 text-sm font-medium">{dia.dia_id}</td>
+                                                                <td className="px-4 py-3 text-sm">
+                                                                    <span className="px-2 py-1 bg-blue-100 text-blue-700 rounded text-xs font-medium whitespace-nowrap">
+                                                                        {dia.type_name}
+                                                                    </span>
+                                                                </td>
+                                                                <td className="px-4 py-3 text-sm">{dia.work_time || '-'}</td>
+                                                                <td className="px-4 py-3 text-sm">
+                                                                    {dia.first_time || '-'}
+                                                                    {dia.num_tr1 && <div className="text-xs text-gray-500">({dia.num_tr1})</div>}
+                                                                </td>
+                                                                <td className="px-4 py-3 text-sm">
+                                                                    {dia.second_time || '-'}
+                                                                    {dia.num_tr2 && <div className="text-xs text-gray-500">({dia.num_tr2})</div>}
+                                                                </td>
+                                                                <td className="px-4 py-3 text-sm">{dia.total_time || '-'}</td>
+                                                                <td className="px-4 py-3 whitespace-nowrap">
+                                                                    <button
+                                                                        onClick={() => setEditing(dia)}
+                                                                        className="px-2 py-1 text-blue-600 hover:bg-blue-50 rounded mr-2 text-sm"
+                                                                    >
+                                                                        수정
+                                                                    </button>
+                                                                    <button
+                                                                        onClick={() => deleteDia(dia.id)}
+                                                                        className="px-2 py-1 text-red-600 hover:bg-red-50 rounded text-sm"
+                                                                    >
+                                                                        삭제
+                                                                    </button>
+                                                                </td>
+                                                            </tr>
+                                                        ))}
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </>
+                                    )}
+                                </div>
+                            )}
+                        </div>
+                    </div>
+
+                    {editing && (
+                        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+                            <div className="bg-white rounded-xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+                                <div className="flex justify-between mb-6">
+                                    <h2 className="text-2xl font-bold">
+                                        {tab === 'office' ? '승무소 정보 수정' : (editing.id ? '다이아 수정' : '다이아 추가')}
+                                    </h2>
+                                    <button onClick={() => setEditing(null)} className="text-gray-500 hover:text-gray-700 text-2xl">
+                                        ×
+                                    </button>
+                                </div>
+
+                                <div className="space-y-4">
+                                    {tab === 'office' ? (
+                                        <>
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-700 mb-2">승무소 코드</label>
+                                                <input
+                                                    placeholder="승무소 코드"
+                                                    value={editing.office_code || ''}
+                                                    onChange={(e) => setEditing({...editing, office_code: e.target.value})}
+                                                    className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                                                />
+                                            </div>
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-700 mb-2">관리자 비밀번호</label>
+                                                <input
+                                                    type="password"
+                                                    placeholder="변경하려면 입력"
+                                                    value={editing.admin_password || ''}
+                                                    onChange={(e) => setEditing({...editing, admin_password: e.target.value})}
+                                                    className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                                                />
+                                            </div>
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-700 mb-2">다이아 차례 1 (쉼표로 구분)</label>
+                                                <textarea
+                                                    placeholder="예: 1번,2번,3번"
+                                                    value={Array.isArray(editing.dia_turns1) ? editing.dia_turns1.join(',') : editing.dia_turns1 || ''}
+                                                    onChange={(e) => setEditing({...editing, dia_turns1: e.target.value.split(',').map(s => s.trim()).filter(Boolean)})}
+                                                    className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                                                    rows="2"
+                                                />
+                                            </div>
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-700 mb-2">다이아 차례 2 (쉼표로 구분)</label>
+                                                <textarea
+                                                    placeholder="예: A번,B번,C번"
+                                                    value={Array.isArray(editing.dia_turns2) ? editing.dia_turns2.join(',') : editing.dia_turns2 || ''}
+                                                    onChange={(e) => setEditing({...editing, dia_turns2: e.target.value.split(',').map(s => s.trim()).filter(Boolean)})}
+                                                    className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                                                    rows="2"
+                                                />
+                                            </div>
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-700 mb-2">다이아 차례 3 (쉼표로 구분)</label>
+                                                <textarea
+                                                    placeholder="예: 휴무1,휴무2"
+                                                    value={Array.isArray(editing.dia_turns3) ? editing.dia_turns3.join(',') : editing.dia_turns3 || ''}
+                                                    onChange={(e) => setEditing({...editing, dia_turns3: e.target.value.split(',').map(s => s.trim()).filter(Boolean)})}
+                                                    className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                                                    rows="2"
+                                                />
+                                            </div>
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-700 mb-2">예비 차례 (쉼표로 구분)</label>
+                                                <textarea
+                                                    placeholder="예: 예비1,예비2"
+                                                    value={Array.isArray(editing.sub_turns) ? editing.sub_turns.join(',') : editing.sub_turns || ''}
+                                                    onChange={(e) => setEditing({...editing, sub_turns: e.target.value.split(',').map(s => s.trim()).filter(Boolean)})}
+                                                    className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                                                    rows="2"
+                                                />
+                                            </div>
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-700 mb-2">다이아 선택 (쉼표로 구분)</label>
+                                                <textarea
+                                                    placeholder="예: 평일,주말,공휴일"
+                                                    value={Array.isArray(editing.dia_selects) ? editing.dia_selects.join(',') : editing.dia_selects || ''}
+                                                    onChange={(e) => setEditing({...editing, dia_selects: e.target.value.split(',').map(s => s.trim()).filter(Boolean)})}
+                                                    className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                                                    rows="2"
+                                                />
+                                            </div>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <div className="grid grid-cols-2 gap-4">
+                                                <input placeholder="다이아 ID" value={editing.dia_id || ''} onChange={(e) => setEditing({...editing, dia_id: e.target.value})} className="w-full px-4 py-2 border rounded-lg focus:outline-none" />
+                                                <input placeholder="타입명" value={editing.type_name || ''} onChange={(e) => setEditing({...editing, type_name: e.target.value})} className="w-full px-4 py-2 border rounded-lg focus:outline-none" />
+                                            </div>
+                                            <div className="grid grid-cols-2 gap-4">
+                                                <input placeholder="첫 번째 시간" value={editing.first_time || ''} onChange={(e) => setEditing({...editing, first_time: e.target.value})} className="w-full px-4 py-2 border rounded-lg focus:outline-none" />
+                                                <input placeholder="두 번째 시간" value={editing.second_time || ''} onChange={(e) => setEditing({...editing, second_time: e.target.value})} className="w-full px-4 py-2 border rounded-lg focus:outline-none" />
+                                            </div>
+                                            <div className="grid grid-cols-2 gap-4">
+                                                <input placeholder="번호 TR1" value={editing.num_tr1 || ''} onChange={(e) => setEditing({...editing, num_tr1: e.target.value})} className="w-full px-4 py-2 border rounded-lg focus:outline-none" />
+                                                <input placeholder="번호 TR2" value={editing.num_tr2 || ''} onChange={(e) => setEditing({...editing, num_tr2: e.target.value})} className="w-full px-4 py-2 border rounded-lg focus:outline-none" />
+                                            </div>
+                                            <div className="grid grid-cols-2 gap-4">
+                                                <input placeholder="총 시간" value={editing.total_time || ''} onChange={(e) => setEditing({...editing, total_time: e.target.value})} className="w-full px-4 py-2 border rounded-lg focus:outline-none" />
+                                                <input placeholder="근무 시간" value={editing.work_time || ''} onChange={(e) => setEditing({...editing, work_time: e.target.value})} className="w-full px-4 py-2 border rounded-lg focus:outline-none" />
+                                            </div>
+                                            <input placeholder="세 번째 시간 (선택)" value={editing.third_time || ''} onChange={(e) => setEditing({...editing, third_time: e.target.value})} className="w-full px-4 py-2 border rounded-lg focus:outline-none" />
+                                        </>
+                                    )}
+
+                                    <div className="flex gap-3 pt-4 border-t">
+                                        <button
+                                            onClick={() => tab === 'office' ? saveOffice(editing) : saveDia(editing)}
+                                            className="flex-1 bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 font-medium"
+                                        >
+                                            저장
+                                        </button>
+                                        <button
+                                            onClick={() => setEditing(null)}
+                                            className="flex-1 bg-gray-200 py-3 rounded-lg hover:bg-gray-300 font-medium"
+                                        >
+                                            취소
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {loading && (
+                        <div className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50">
+                            <div className="bg-white rounded-lg p-6 shadow-xl">
+                                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+                                <p className="mt-4 text-gray-700 font-medium">처리 중...</p>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            );
+        }
+
+        ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+    </script>
+</body>
+</html>
