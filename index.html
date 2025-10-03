@@ -26,7 +26,7 @@
             const [officeInfo, setOfficeInfo] = useState(null);
             const [dias, setDias] = useState([]);
             const [tab, setTab] = useState('office');
-            const [diaTypeTab, setDiaTypeTab] = useState('all'); // 다이아 타입 탭
+            const [diaTypeTab, setDiaTypeTab] = useState('all');
             const [editing, setEditing] = useState(null);
             const [search, setSearch] = useState('');
             const [loading, setLoading] = useState(false);
@@ -214,18 +214,15 @@
                 );
             }
 
-            // 자연스러운 정렬 함수
             const naturalSort = (a, b) => {
                 const aDiaId = a.dia_id || '';
                 const bDiaId = b.dia_id || '';
                 
-                // 숫자와 텍스트 분리
                 const splitId = (str) => {
                     const match = str.match(/^([가-힣]*)(\d+)$/);
                     if (match) {
                         return { text: match[1], num: parseInt(match[2], 10) };
                     }
-                    // 순수 숫자인 경우
                     const numMatch = str.match(/^(\d+)$/);
                     if (numMatch) {
                         return { text: '', num: parseInt(numMatch[1], 10) };
@@ -236,18 +233,15 @@
                 const aParts = splitId(aDiaId);
                 const bParts = splitId(bDiaId);
                 
-                // 텍스트 부분 비교 (없으면 숫자가 먼저)
                 if (aParts.text !== bParts.text) {
                     if (!aParts.text) return -1;
                     if (!bParts.text) return 1;
                     return aParts.text.localeCompare(bParts.text);
                 }
                 
-                // 숫자 부분 비교
                 return aParts.num - bParts.num;
             };
 
-            // 다이아 타입별 분류 및 정렬
             const diaTypes = ['all', ...new Set(dias.map(d => d.type_name).filter(Boolean))];
             const filteredByType = diaTypeTab === 'all' 
                 ? dias 
@@ -292,64 +286,97 @@
 
                             {tab === 'office' && officeInfo && (
                                 <div className="p-6">
-                                    <div className="flex justify-between items-center mb-4">
-                                        <h2 className="text-xl font-semibold">승무소 기본 정보</h2>
-                                        <button
-                                            onClick={() => setEditing(officeInfo)}
-                                            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-                                        >
-                                            수정
-                                        </button>
-                                    </div>
+                                    <h2 className="text-xl font-semibold mb-6">승무소 기본 정보</h2>
 
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div className="space-y-4">
                                         <div className="p-4 bg-gray-50 rounded-lg">
                                             <p className="text-sm text-gray-600 mb-1">승무소명</p>
                                             <p className="text-lg font-semibold">{officeInfo.office_name}</p>
                                         </div>
-                                        <div className="p-4 bg-gray-50 rounded-lg">
-                                            <p className="text-sm text-gray-600 mb-1">승무소 코드</p>
-                                            <p className="text-lg font-semibold">{officeInfo.office_code || '-'}</p>
+
+                                        <div className="p-4 bg-white border rounded-lg flex justify-between items-start">
+                                            <div className="flex-1">
+                                                <p className="text-sm text-gray-600 mb-1">기관사</p>
+                                                <p className="text-sm font-medium text-gray-800">
+                                                    {Array.isArray(officeInfo.dia_turns1) && officeInfo.dia_turns1.length > 0
+                                                        ? officeInfo.dia_turns1.join(', ')
+                                                        : '-'}
+                                                </p>
+                                            </div>
+                                            <button
+                                                onClick={() => setEditing({...officeInfo, editField: 'dia_turns1'})}
+                                                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm ml-4"
+                                            >
+                                                수정
+                                            </button>
                                         </div>
-                                        <div className="p-4 bg-gray-50 rounded-lg">
-                                            <p className="text-sm text-gray-600 mb-1">다이아 차례 1</p>
-                                            <p className="text-sm font-medium text-gray-800">
-                                                {Array.isArray(officeInfo.dia_turns1) && officeInfo.dia_turns1.length > 0
-                                                    ? officeInfo.dia_turns1.join(', ')
-                                                    : '-'}
-                                            </p>
+
+                                        <div className="p-4 bg-white border rounded-lg flex justify-between items-start">
+                                            <div className="flex-1">
+                                                <p className="text-sm text-gray-600 mb-1">차장</p>
+                                                <p className="text-sm font-medium text-gray-800">
+                                                    {Array.isArray(officeInfo.dia_turns2) && officeInfo.dia_turns2.length > 0
+                                                        ? officeInfo.dia_turns2.join(', ')
+                                                        : '-'}
+                                                </p>
+                                            </div>
+                                            <button
+                                                onClick={() => setEditing({...officeInfo, editField: 'dia_turns2'})}
+                                                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm ml-4"
+                                            >
+                                                수정
+                                            </button>
                                         </div>
-                                        <div className="p-4 bg-gray-50 rounded-lg">
-                                            <p className="text-sm text-gray-600 mb-1">다이아 차례 2</p>
-                                            <p className="text-sm font-medium text-gray-800">
-                                                {Array.isArray(officeInfo.dia_turns2) && officeInfo.dia_turns2.length > 0
-                                                    ? officeInfo.dia_turns2.join(', ')
-                                                    : '-'}
-                                            </p>
+
+                                        <div className="p-4 bg-white border rounded-lg flex justify-between items-start">
+                                            <div className="flex-1">
+                                                <p className="text-sm text-gray-600 mb-1">운휴</p>
+                                                <p className="text-sm font-medium text-gray-800">
+                                                    {Array.isArray(officeInfo.dia_turns3) && officeInfo.dia_turns3.length > 0
+                                                        ? officeInfo.dia_turns3.join(', ')
+                                                        : '-'}
+                                                </p>
+                                            </div>
+                                            <button
+                                                onClick={() => setEditing({...officeInfo, editField: 'dia_turns3'})}
+                                                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm ml-4"
+                                            >
+                                                수정
+                                            </button>
                                         </div>
-                                        <div className="p-4 bg-gray-50 rounded-lg">
-                                            <p className="text-sm text-gray-600 mb-1">다이아 차례 3</p>
-                                            <p className="text-sm font-medium text-gray-800">
-                                                {Array.isArray(officeInfo.dia_turns3) && officeInfo.dia_turns3.length > 0
-                                                    ? officeInfo.dia_turns3.join(', ')
-                                                    : '-'}
-                                            </p>
+
+                                        <div className="p-4 bg-white border rounded-lg flex justify-between items-start">
+                                            <div className="flex-1">
+                                                <p className="text-sm text-gray-600 mb-1">4조2교대(예비)</p>
+                                                <p className="text-sm font-medium text-gray-800">
+                                                    {Array.isArray(officeInfo.sub_turns) && officeInfo.sub_turns.length > 0
+                                                        ? officeInfo.sub_turns.join(', ')
+                                                        : '-'}
+                                                </p>
+                                            </div>
+                                            <button
+                                                onClick={() => setEditing({...officeInfo, editField: 'sub_turns'})}
+                                                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm ml-4"
+                                            >
+                                                수정
+                                            </button>
                                         </div>
-                                        <div className="p-4 bg-gray-50 rounded-lg">
-                                            <p className="text-sm text-gray-600 mb-1">예비 차례</p>
-                                            <p className="text-sm font-medium text-gray-800">
-                                                {Array.isArray(officeInfo.sub_turns) && officeInfo.sub_turns.length > 0
-                                                    ? officeInfo.sub_turns.join(', ')
-                                                    : '-'}
-                                            </p>
-                                        </div>
-                                        <div className="p-4 bg-gray-50 rounded-lg col-span-2">
-                                            <p className="text-sm text-gray-600 mb-1">다이아 선택</p>
-                                            <p className="text-sm font-medium text-gray-800">
-                                                {Array.isArray(officeInfo.dia_selects) && officeInfo.dia_selects.length > 0
-                                                    ? officeInfo.dia_selects.join(', ')
-                                                    : '-'}
-                                            </p>
+
+                                        <div className="p-4 bg-white border rounded-lg flex justify-between items-start">
+                                            <div className="flex-1">
+                                                <p className="text-sm text-gray-600 mb-1">교번선택</p>
+                                                <p className="text-sm font-medium text-gray-800">
+                                                    {Array.isArray(officeInfo.dia_selects) && officeInfo.dia_selects.length > 0
+                                                        ? officeInfo.dia_selects.join(', ')
+                                                        : '-'}
+                                                </p>
+                                            </div>
+                                            <button
+                                                onClick={() => setEditing({...officeInfo, editField: 'dia_selects'})}
+                                                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm ml-4"
+                                            >
+                                                수정
+                                            </button>
                                         </div>
                                     </div>
                                 </div>
@@ -357,7 +384,6 @@
 
                             {tab === 'dia' && (
                                 <div>
-                                    {/* 다이아 타입별 탭 */}
                                     <div className="border-b bg-gray-50 px-2 md:px-4 pt-4 overflow-x-auto">
                                         <div className="flex gap-2 min-w-max">
                                             {diaTypes.map(type => (
@@ -395,18 +421,15 @@
                                         </button>
                                     </div>
 
-                                    {/* 모바일과 데스크톱 모두 필드명을 한글로 변경 */}
                                     {filteredDias.length === 0 ? (
                                         <div className="p-4 md:p-8 text-center text-gray-500 text-sm md:text-base">
                                             등록된 다이아가 없습니다.
                                         </div>
                                     ) : (
                                         <>
-                                            {/* 모바일 카드 뷰 */}
                                             <div className="block md:hidden divide-y">
                                                 {filteredDias.map(dia => (
                                                     <div key={dia.id} className="p-3 hover:bg-gray-50">
-                                                        {/* 1줄: 다이아ID + 타입 + 버튼 */}
                                                         <div className="flex items-center justify-between mb-3">
                                                             <div className="flex items-center gap-2">
                                                                 <span className="font-bold text-lg text-gray-900">
@@ -432,7 +455,6 @@
                                                             </div>
                                                         </div>
 
-                                                        {/* 2줄: 출근시간 + 총근무시간 */}
                                                         <div className="bg-gray-50 rounded-lg p-2 mb-2">
                                                             <div className="flex items-center justify-between text-sm">
                                                                 <div className="flex items-center gap-4">
@@ -452,7 +474,6 @@
                                                             </div>
                                                         </div>
 
-                                                        {/* 3줄: 전반사업 시간 */}
                                                         {dia.first_time && (
                                                             <div className="bg-blue-50 rounded-lg p-2 mb-1">
                                                                 <div className="flex items-center justify-between">
@@ -462,7 +483,6 @@
                                                             </div>
                                                         )}
 
-                                                        {/* 4줄: 전반 열차번호 */}
                                                         {dia.num_tr1 && (
                                                             <div className="bg-blue-50 rounded-lg p-2 mb-2">
                                                                 <div className="flex items-center justify-between">
@@ -472,7 +492,6 @@
                                                             </div>
                                                         )}
 
-                                                        {/* 5줄: 후반사업 시간 */}
                                                         {dia.second_time && (
                                                             <div className="bg-green-50 rounded-lg p-2 mb-1">
                                                                 <div className="flex items-center justify-between">
@@ -482,7 +501,6 @@
                                                             </div>
                                                         )}
 
-                                                        {/* 6줄: 후반 열차번호 */}
                                                         {dia.num_tr2 && (
                                                             <div className="bg-green-50 rounded-lg p-2 mb-2">
                                                                 <div className="flex items-center justify-between">
@@ -492,7 +510,6 @@
                                                             </div>
                                                         )}
 
-                                                        {/* 7줄: 세 번째 시간 (있을 경우) */}
                                                         {dia.third_time && (
                                                             <div className="bg-purple-50 rounded-lg p-2">
                                                                 <div className="flex items-center justify-between">
@@ -505,7 +522,6 @@
                                                 ))}
                                             </div>
 
-                                            {/* 데스크톱 테이블 뷰 */}
                                             <div className="hidden md:block overflow-x-auto">
                                                 <table className="w-full">
                                                     <thead className="bg-gray-100">
@@ -569,7 +585,13 @@
                             <div className="bg-white rounded-xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
                                 <div className="flex justify-between mb-6">
                                     <h2 className="text-2xl font-bold">
-                                        {tab === 'office' ? '승무소 정보 수정' : (editing.id ? '다이아 수정' : '다이아 추가')}
+                                        {tab === 'office' && editing.editField === 'office_code' && '승무소 코드 수정'}
+                                        {tab === 'office' && editing.editField === 'dia_turns1' && '기관사 수정'}
+                                        {tab === 'office' && editing.editField === 'dia_turns2' && '차장 수정'}
+                                        {tab === 'office' && editing.editField === 'dia_turns3' && '운휴 수정'}
+                                        {tab === 'office' && editing.editField === 'sub_turns' && '4조2교대(예비) 수정'}
+                                        {tab === 'office' && editing.editField === 'dia_selects' && '교번선택 수정'}
+                                        {tab === 'dia' && (editing.id ? '다이아 수정' : '다이아 추가')}
                                     </h2>
                                     <button onClick={() => setEditing(null)} className="text-gray-500 hover:text-gray-700 text-2xl">
                                         ×
@@ -579,75 +601,77 @@
                                 <div className="space-y-4">
                                     {tab === 'office' ? (
                                         <>
-                                            <div>
-                                                <label className="block text-sm font-medium text-gray-700 mb-2">승무소 코드</label>
-                                                <input
-                                                    placeholder="승무소 코드"
-                                                    value={editing.office_code || ''}
-                                                    onChange={(e) => setEditing({...editing, office_code: e.target.value})}
-                                                    className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                                                />
-                                            </div>
-                                            <div>
-                                                <label className="block text-sm font-medium text-gray-700 mb-2">관리자 비밀번호</label>
-                                                <input
-                                                    type="password"
-                                                    placeholder="변경하려면 입력"
-                                                    value={editing.admin_password || ''}
-                                                    onChange={(e) => setEditing({...editing, admin_password: e.target.value})}
-                                                    className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                                                />
-                                            </div>
-                                            <div>
-                                                <label className="block text-sm font-medium text-gray-700 mb-2">다이아 차례 1 (쉼표로 구분)</label>
-                                                <textarea
-                                                    placeholder="예: 1번,2번,3번"
-                                                    value={Array.isArray(editing.dia_turns1) ? editing.dia_turns1.join(',') : editing.dia_turns1 || ''}
-                                                    onChange={(e) => setEditing({...editing, dia_turns1: e.target.value.split(',').map(s => s.trim()).filter(Boolean)})}
-                                                    className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                                                    rows="2"
-                                                />
-                                            </div>
-                                            <div>
-                                                <label className="block text-sm font-medium text-gray-700 mb-2">다이아 차례 2 (쉼표로 구분)</label>
-                                                <textarea
-                                                    placeholder="예: A번,B번,C번"
-                                                    value={Array.isArray(editing.dia_turns2) ? editing.dia_turns2.join(',') : editing.dia_turns2 || ''}
-                                                    onChange={(e) => setEditing({...editing, dia_turns2: e.target.value.split(',').map(s => s.trim()).filter(Boolean)})}
-                                                    className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                                                    rows="2"
-                                                />
-                                            </div>
-                                            <div>
-                                                <label className="block text-sm font-medium text-gray-700 mb-2">다이아 차례 3 (쉼표로 구분)</label>
-                                                <textarea
-                                                    placeholder="예: 휴무1,휴무2"
-                                                    value={Array.isArray(editing.dia_turns3) ? editing.dia_turns3.join(',') : editing.dia_turns3 || ''}
-                                                    onChange={(e) => setEditing({...editing, dia_turns3: e.target.value.split(',').map(s => s.trim()).filter(Boolean)})}
-                                                    className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                                                    rows="2"
-                                                />
-                                            </div>
-                                            <div>
-                                                <label className="block text-sm font-medium text-gray-700 mb-2">예비 차례 (쉼표로 구분)</label>
-                                                <textarea
-                                                    placeholder="예: 예비1,예비2"
-                                                    value={Array.isArray(editing.sub_turns) ? editing.sub_turns.join(',') : editing.sub_turns || ''}
-                                                    onChange={(e) => setEditing({...editing, sub_turns: e.target.value.split(',').map(s => s.trim()).filter(Boolean)})}
-                                                    className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                                                    rows="2"
-                                                />
-                                            </div>
-                                            <div>
-                                                <label className="block text-sm font-medium text-gray-700 mb-2">다이아 선택 (쉼표로 구분)</label>
-                                                <textarea
-                                                    placeholder="예: 평일,주말,공휴일"
-                                                    value={Array.isArray(editing.dia_selects) ? editing.dia_selects.join(',') : editing.dia_selects || ''}
-                                                    onChange={(e) => setEditing({...editing, dia_selects: e.target.value.split(',').map(s => s.trim()).filter(Boolean)})}
-                                                    className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                                                    rows="2"
-                                                />
-                                            </div>
+                                            {editing.editField === 'office_code' && (
+                                                <div>
+                                                    <label className="block text-sm font-medium text-gray-700 mb-2">승무소 코드</label>
+                                                    <input
+                                                        placeholder="승무소 코드"
+                                                        value={editing.office_code || ''}
+                                                        onChange={(e) => setEditing({...editing, office_code: e.target.value})}
+                                                        className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                                                    />
+                                                </div>
+                                            )}
+                                            {editing.editField === 'dia_turns1' && (
+                                                <div>
+                                                    <label className="block text-sm font-medium text-gray-700 mb-2">기관사 (쉼표로 구분)</label>
+                                                    <textarea
+                                                        placeholder="예: 1번,2번,3번"
+                                                        value={Array.isArray(editing.dia_turns1) ? editing.dia_turns1.join(',') : editing.dia_turns1 || ''}
+                                                        onChange={(e) => setEditing({...editing, dia_turns1: e.target.value.split(',').map(s => s.trim()).filter(Boolean)})}
+                                                        className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                                                        rows="3"
+                                                    />
+                                                </div>
+                                            )}
+                                            {editing.editField === 'dia_turns2' && (
+                                                <div>
+                                                    <label className="block text-sm font-medium text-gray-700 mb-2">차장 (쉼표로 구분)</label>
+                                                    <textarea
+                                                        placeholder="예: A번,B번,C번"
+                                                        value={Array.isArray(editing.dia_turns2) ? editing.dia_turns2.join(',') : editing.dia_turns2 || ''}
+                                                        onChange={(e) => setEditing({...editing, dia_turns2: e.target.value.split(',').map(s => s.trim()).filter(Boolean)})}
+                                                        className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                                                        rows="3"
+                                                    />
+                                                </div>
+                                            )}
+                                            {editing.editField === 'dia_turns3' && (
+                                                <div>
+                                                    <label className="block text-sm font-medium text-gray-700 mb-2">운휴 (쉼표로 구분)</label>
+                                                    <textarea
+                                                        placeholder="예: 휴무1,휴무2"
+                                                        value={Array.isArray(editing.dia_turns3) ? editing.dia_turns3.join(',') : editing.dia_turns3 || ''}
+                                                        onChange={(e) => setEditing({...editing, dia_turns3: e.target.value.split(',').map(s => s.trim()).filter(Boolean)})}
+                                                        className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                                                        rows="3"
+                                                    />
+                                                </div>
+                                            )}
+                                            {editing.editField === 'sub_turns' && (
+                                                <div>
+                                                    <label className="block text-sm font-medium text-gray-700 mb-2">4조2교대(예비) (쉼표로 구분)</label>
+                                                    <textarea
+                                                        placeholder="예: 예비1,예비2"
+                                                        value={Array.isArray(editing.sub_turns) ? editing.sub_turns.join(',') : editing.sub_turns || ''}
+                                                        onChange={(e) => setEditing({...editing, sub_turns: e.target.value.split(',').map(s => s.trim()).filter(Boolean)})}
+                                                        className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                                                        rows="3"
+                                                    />
+                                                </div>
+                                            )}
+                                            {editing.editField === 'dia_selects' && (
+                                                <div>
+                                                    <label className="block text-sm font-medium text-gray-700 mb-2">교번선택 (쉼표로 구분)</label>
+                                                    <textarea
+                                                        placeholder="예: 평일,주말,공휴일"
+                                                        value={Array.isArray(editing.dia_selects) ? editing.dia_selects.join(',') : editing.dia_selects || ''}
+                                                        onChange={(e) => setEditing({...editing, dia_selects: e.target.value.split(',').map(s => s.trim()).filter(Boolean)})}
+                                                        className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                                                        rows="3"
+                                                    />
+                                                </div>
+                                            )}
                                         </>
                                     ) : (
                                         <>
