@@ -82,7 +82,24 @@
             };
 
             const saveOffice = async (item) => {
+                setLoading(true);
                 try {
+                    const updateData = {};
+                    
+                    if (item.editField === 'office_code') {
+                        updateData.office_code = item.office_code;
+                    } else if (item.editField === 'dia_turns1') {
+                        updateData.dia_turns1 = `{${Array.isArray(item.dia_turns1) ? item.dia_turns1.join(',') : ''}}`;
+                    } else if (item.editField === 'dia_turns2') {
+                        updateData.dia_turns2 = `{${Array.isArray(item.dia_turns2) ? item.dia_turns2.join(',') : ''}}`;
+                    } else if (item.editField === 'dia_turns3') {
+                        updateData.dia_turns3 = `{${Array.isArray(item.dia_turns3) ? item.dia_turns3.join(',') : ''}}`;
+                    } else if (item.editField === 'sub_turns') {
+                        updateData.sub_turns = `{${Array.isArray(item.sub_turns) ? item.sub_turns.join(',') : ''}}`;
+                    } else if (item.editField === 'dia_selects') {
+                        updateData.dia_selects = `{${Array.isArray(item.dia_selects) ? item.dia_selects.join(',') : ''}}`;
+                    }
+
                     const res = await fetch(
                         `${SUPABASE_URL}/rest/v1/office?office_name=eq.${encodeURIComponent(officeName)}`,
                         {
@@ -93,74 +110,115 @@
                                 'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
                                 'Prefer': 'return=minimal'
                             },
-                            body: JSON.stringify({
-                                office_code: item.office_code,
-                                admin_password: item.admin_password,
-                                dia_turns1: Array.isArray(item.dia_turns1) ? item.dia_turns1 : [],
-                                dia_turns2: Array.isArray(item.dia_turns2) ? item.dia_turns2 : [],
-                                dia_turns3: Array.isArray(item.dia_turns3) ? item.dia_turns3 : [],
-                                sub_turns: Array.isArray(item.sub_turns) ? item.sub_turns : [],
-                                dia_selects: Array.isArray(item.dia_selects) ? item.dia_selects : [],
-                            })
+                            body: JSON.stringify(updateData)
                         }
                     );
+                    
                     if (res.ok) {
                         alert('저장 완료!');
                         setEditing(null);
-                        loadData();
+                        await loadData();
                     } else {
-                        alert('저장 실패');
+                        const errorText = await res.text();
+                        alert('저장 실패: ' + errorText);
                     }
                 } catch (e) {
                     alert('오류: ' + e.message);
+                } finally {
+                    setLoading(false);
                 }
             };
 
             const saveDia = async (item) => {
+                setLoading(true);
                 try {
-                    const method = item.id ? 'PATCH' : 'POST';
-                    const url = item.id 
-                        ? `${SUPABASE_URL}/rest/v1/dia?id=eq.${item.id}&office_name=eq.${encodeURIComponent(officeName)}`
-                        : `${SUPABASE_URL}/rest/v1/dia`;
-                    
-                    const res = await fetch(url, {
-                        method,
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'apikey': SUPABASE_ANON_KEY,
-                            'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
-                            'Prefer': 'return=minimal'
-                        },
-                        body: JSON.stringify({ ...item, office_name: officeName })
-                    });
+                    const diaData = {
+                        dia_id: item.dia_id,
+                        type_name: item.type_name,
+                        work_time: item.work_time || '',
+                        first_time: item.first_time || '',
+                        second_time: item.second_time || '',
+                        third_time: item.third_time || '',
+                        total_time: item.total_time || '',
+                        num_tr1: item.num_tr1 || '',
+                        num_tr2: item.num_tr2 || '',
+                        office_name: officeName,
+                        office_id: officeInfo.office_id
+                    };
+
+                    let res;
+                    if (item.id) {
+                        res = await fetch(
+                            `${SUPABASE_URL}/rest/v1/dia?id=eq.${item.id}`,
+                            {
+                                method: 'PATCH',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'apikey': SUPABASE_ANON_KEY,
+                                    'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+                                    'Prefer': 'return=minimal'
+                                },
+                                body: JSON.stringify(diaData)
+                            }
+                        );
+                    } else {
+                        res = await fetch(
+                            `${SUPABASE_URL}/rest/v1/dia`,
+                            {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'apikey': SUPABASE_ANON_KEY,
+                                    'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+                                    'Prefer': 'return=minimal'
+                                },
+                                body: JSON.stringify(diaData)
+                            }
+                        );
+                    }
                     
                     if (res.ok) {
                         alert(item.id ? '수정 완료!' : '추가 완료!');
                         setEditing(null);
-                        loadData();
+                        await loadData();
                     } else {
-                        alert('실패');
+                        const errorText = await res.text();
+                        alert('실패: ' + errorText);
                     }
                 } catch (e) {
                     alert('오류: ' + e.message);
+                } finally {
+                    setLoading(false);
                 }
             };
 
             const deleteDia = async (id) => {
                 if (!confirm('삭제하시겠습니까?')) return;
+                setLoading(true);
                 try {
                     const res = await fetch(
-                        `${SUPABASE_URL}/rest/v1/dia?id=eq.${id}&office_name=eq.${encodeURIComponent(officeName)}`,
-                        { method: 'DELETE', headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': `Bearer ${SUPABASE_ANON_KEY}` } }
+                        `${SUPABASE_URL}/rest/v1/dia?id=eq.${id}`,
+                        { 
+                            method: 'DELETE', 
+                            headers: { 
+                                'apikey': SUPABASE_ANON_KEY, 
+                                'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+                                'Prefer': 'return=minimal'
+                            } 
+                        }
                     );
+                    
                     if (res.ok) {
                         alert('삭제 완료!');
-                        loadData();
+                        await loadData();
                     } else {
-                        alert('삭제 실패');
+                        const errorText = await res.text();
+                        alert('삭제 실패: ' + errorText);
                     }
                 } catch (e) {
                     alert('오류: ' + e.message);
+                } finally {
+                    setLoading(false);
                 }
             };
 
