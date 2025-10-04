@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="ko">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,13 +9,14 @@
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
+
 <body>
     <div id="root"></div>
-    
+
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <script type="text/babel">
         const { useState, useEffect } = React;
-        
+
         const SUPABASE_URL = 'https://srsyxsddjbojnwvjoera.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNyc3l4c2RkamJvam53dmpvZXJhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg3NjY4NTEsImV4cCI6MjA3NDM0Mjg1MX0.wmTrMzDqBs10qL_wBeJJQTjQMuCuvfAmY6_eW2brqT8';
 
@@ -58,6 +60,29 @@
                 }
             };
 
+            // const loadData = async () => {
+            //     setLoading(true);
+            //     try {
+            //         const officeRes = await fetch(
+            //             `${SUPABASE_URL}/rest/v1/office?office_name=eq.${encodeURIComponent(officeName)}&select=*`,
+            //             { headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': `Bearer ${SUPABASE_ANON_KEY}` } }
+            //         );
+            //         const officeData = await officeRes.json();
+            //         if (officeData?.[0]) setOfficeInfo(officeData[0]);
+
+            //         const diaRes = await fetch(
+            //             `${SUPABASE_URL}/rest/v1/dia?office_name=eq.${encodeURIComponent(officeName)}&select=*&order=id`,
+            //             { headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': `Bearer ${SUPABASE_ANON_KEY}` } }
+            //         );
+            //         const diaData = await diaRes.json();
+            //         setDias(diaData || []);
+            //     } catch (e) {
+            //         alert('데이터 로드 오류: ' + e.message);
+            //     } finally {
+            //         setLoading(false);
+            //     }
+            // };
+
             const loadData = async () => {
                 setLoading(true);
                 try {
@@ -66,7 +91,35 @@
                         { headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': `Bearer ${SUPABASE_ANON_KEY}` } }
                     );
                     const officeData = await officeRes.json();
-                    if (officeData?.[0]) setOfficeInfo(officeData[0]);
+
+                    if (officeData?.[0]) {
+                        // PostgreSQL 배열을 JavaScript 배열로 변환
+                        const office = officeData[0];
+
+                        // 배열 필드들을 파싱
+                        const parsePostgresArray = (value) => {
+                            if (!value) return [];
+                            if (Array.isArray(value)) return value;
+                            if (typeof value === 'string') {
+                                // {1,2,3} 형식에서 배열로 변환
+                                return value
+                                    .replace(/^\{/, '')
+                                    .replace(/\}$/, '')
+                                    .split(',')
+                                    .map(s => s.trim())
+                                    .filter(Boolean);
+                            }
+                            return [];
+                        };
+
+                        office.dia_turns1 = parsePostgresArray(office.dia_turns1);
+                        office.dia_turns2 = parsePostgresArray(office.dia_turns2);
+                        office.dia_turns3 = parsePostgresArray(office.dia_turns3);
+                        office.sub_turns = parsePostgresArray(office.sub_turns);
+                        office.dia_selects = parsePostgresArray(office.dia_selects);
+
+                        setOfficeInfo(office);
+                    }
 
                     const diaRes = await fetch(
                         `${SUPABASE_URL}/rest/v1/dia?office_name=eq.${encodeURIComponent(officeName)}&select=*&order=id`,
@@ -81,23 +134,86 @@
                 }
             };
 
+            // const saveOffice = async (item) => {
+            //     setLoading(true);
+            //     try {
+            //         const updateData = {};
+
+            //         if (item.editField === 'office_code') {
+            //             updateData.office_code = item.office_code;
+            //         } else if (item.editField === 'dia_turns1') {
+            //             updateData.dia_turns1 = `{${Array.isArray(item.dia_turns1) ? item.dia_turns1.join(',') : ''}}`;
+            //         } else if (item.editField === 'dia_turns2') {
+            //             updateData.dia_turns2 = `{${Array.isArray(item.dia_turns2) ? item.dia_turns2.join(',') : ''}}`;
+            //         } else if (item.editField === 'dia_turns3') {
+            //             updateData.dia_turns3 = `{${Array.isArray(item.dia_turns3) ? item.dia_turns3.join(',') : ''}}`;
+            //         } else if (item.editField === 'sub_turns') {
+            //             updateData.sub_turns = `{${Array.isArray(item.sub_turns) ? item.sub_turns.join(',') : ''}}`;
+            //         } else if (item.editField === 'dia_selects') {
+            //             updateData.dia_selects = `{${Array.isArray(item.dia_selects) ? item.dia_selects.join(',') : ''}}`;
+            //         }
+
+            //         const res = await fetch(
+            //             `${SUPABASE_URL}/rest/v1/office?office_name=eq.${encodeURIComponent(officeName)}`,
+            //             {
+            //                 method: 'PATCH',
+            //                 headers: {
+            //                     'Content-Type': 'application/json',
+            //                     'apikey': SUPABASE_ANON_KEY,
+            //                     'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+            //                     'Prefer': 'return=minimal'
+            //                 },
+            //                 body: JSON.stringify(updateData)
+            //             }
+            //         );
+
+            //         if (res.ok) {
+            //             alert('저장 완료!');
+            //             setEditing(null);
+            //             await loadData();
+            //         } else {
+            //             const errorText = await res.text();
+            //             alert('저장 실패: ' + errorText);
+            //         }
+            //     } catch (e) {
+            //         alert('오류: ' + e.message);
+            //     } finally {
+            //         setLoading(false);
+            //     }
+            // };
+
             const saveOffice = async (item) => {
                 setLoading(true);
                 try {
                     const updateData = {};
-                    
+
                     if (item.editField === 'office_code') {
                         updateData.office_code = item.office_code;
                     } else if (item.editField === 'dia_turns1') {
-                        updateData.dia_turns1 = `{${Array.isArray(item.dia_turns1) ? item.dia_turns1.join(',') : ''}}`;
+                        const values = typeof item.dia_turns1 === 'string'
+                            ? item.dia_turns1.split(',').map(s => s.trim()).filter(Boolean)
+                            : item.dia_turns1;
+                        updateData.dia_turns1 = `{${values.join(',')}}`;
                     } else if (item.editField === 'dia_turns2') {
-                        updateData.dia_turns2 = `{${Array.isArray(item.dia_turns2) ? item.dia_turns2.join(',') : ''}}`;
+                        const values = typeof item.dia_turns2 === 'string'
+                            ? item.dia_turns2.split(',').map(s => s.trim()).filter(Boolean)
+                            : item.dia_turns2;
+                        updateData.dia_turns2 = `{${values.join(',')}}`;
                     } else if (item.editField === 'dia_turns3') {
-                        updateData.dia_turns3 = `{${Array.isArray(item.dia_turns3) ? item.dia_turns3.join(',') : ''}}`;
+                        const values = typeof item.dia_turns3 === 'string'
+                            ? item.dia_turns3.split(',').map(s => s.trim()).filter(Boolean)
+                            : item.dia_turns3;
+                        updateData.dia_turns3 = `{${values.join(',')}}`;
                     } else if (item.editField === 'sub_turns') {
-                        updateData.sub_turns = `{${Array.isArray(item.sub_turns) ? item.sub_turns.join(',') : ''}}`;
+                        const values = typeof item.sub_turns === 'string'
+                            ? item.sub_turns.split(',').map(s => s.trim()).filter(Boolean)
+                            : item.sub_turns;
+                        updateData.sub_turns = `{${values.join(',')}}`;
                     } else if (item.editField === 'dia_selects') {
-                        updateData.dia_selects = `{${Array.isArray(item.dia_selects) ? item.dia_selects.join(',') : ''}}`;
+                        const values = typeof item.dia_selects === 'string'
+                            ? item.dia_selects.split(',').map(s => s.trim()).filter(Boolean)
+                            : item.dia_selects;
+                        updateData.dia_selects = `{${values.join(',')}}`;
                     }
 
                     const res = await fetch(
@@ -113,7 +229,7 @@
                             body: JSON.stringify(updateData)
                         }
                     );
-                    
+
                     if (res.ok) {
                         alert('저장 완료!');
                         setEditing(null);
@@ -176,7 +292,7 @@
                             }
                         );
                     }
-                    
+
                     if (res.ok) {
                         alert(item.id ? '수정 완료!' : '추가 완료!');
                         setEditing(null);
@@ -198,16 +314,16 @@
                 try {
                     const res = await fetch(
                         `${SUPABASE_URL}/rest/v1/dia?id=eq.${id}`,
-                        { 
-                            method: 'DELETE', 
-                            headers: { 
-                                'apikey': SUPABASE_ANON_KEY, 
+                        {
+                            method: 'DELETE',
+                            headers: {
+                                'apikey': SUPABASE_ANON_KEY,
                                 'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
                                 'Prefer': 'return=minimal'
-                            } 
+                            }
                         }
                     );
-                    
+
                     if (res.ok) {
                         alert('삭제 완료!');
                         await loadData();
@@ -230,7 +346,7 @@
                                 <h1 className="text-3xl font-bold text-gray-800 mb-2">승무소 Dia관리 시스템</h1>
                                 <p className="text-gray-600">승무소별로 편하게 수정하세요</p>
                             </div>
-                            
+
                             {error && (
                                 <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
                                     {error}
@@ -275,7 +391,7 @@
             const naturalSort = (a, b) => {
                 const aDiaId = a.dia_id || '';
                 const bDiaId = b.dia_id || '';
-                
+
                 const splitId = (str) => {
                     const match = str.match(/^([가-힣]*)(\d+)$/);
                     if (match) {
@@ -287,22 +403,22 @@
                     }
                     return { text: str, num: 0 };
                 };
-                
+
                 const aParts = splitId(aDiaId);
                 const bParts = splitId(bDiaId);
-                
+
                 if (aParts.text !== bParts.text) {
                     if (!aParts.text) return -1;
                     if (!bParts.text) return 1;
                     return aParts.text.localeCompare(bParts.text);
                 }
-                
+
                 return aParts.num - bParts.num;
             };
 
             const diaTypes = ['all', ...new Set(dias.map(d => d.type_name).filter(Boolean))];
-            const filteredByType = diaTypeTab === 'all' 
-                ? dias 
+            const filteredByType = diaTypeTab === 'all'
+                ? dias
                 : dias.filter(d => d.type_name === diaTypeTab);
             const filteredDias = filteredByType
                 .filter(d => d.dia_id?.toLowerCase().includes(search.toLowerCase()))
@@ -362,7 +478,7 @@
                                                 </p>
                                             </div>
                                             <button
-                                                onClick={() => setEditing({...officeInfo, editField: 'dia_turns1'})}
+                                                onClick={() => setEditing({ ...officeInfo, editField: 'dia_turns1' })}
                                                 className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm ml-4"
                                             >
                                                 수정
@@ -379,7 +495,7 @@
                                                 </p>
                                             </div>
                                             <button
-                                                onClick={() => setEditing({...officeInfo, editField: 'dia_turns2'})}
+                                                onClick={() => setEditing({ ...officeInfo, editField: 'dia_turns2' })}
                                                 className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm ml-4"
                                             >
                                                 수정
@@ -396,7 +512,7 @@
                                                 </p>
                                             </div>
                                             <button
-                                                onClick={() => setEditing({...officeInfo, editField: 'dia_turns3'})}
+                                                onClick={() => setEditing({ ...officeInfo, editField: 'dia_turns3' })}
                                                 className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm ml-4"
                                             >
                                                 수정
@@ -413,7 +529,7 @@
                                                 </p>
                                             </div>
                                             <button
-                                                onClick={() => setEditing({...officeInfo, editField: 'sub_turns'})}
+                                                onClick={() => setEditing({ ...officeInfo, editField: 'sub_turns' })}
                                                 className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm ml-4"
                                             >
                                                 수정
@@ -430,7 +546,7 @@
                                                 </p>
                                             </div>
                                             <button
-                                                onClick={() => setEditing({...officeInfo, editField: 'dia_selects'})}
+                                                onClick={() => setEditing({ ...officeInfo, editField: 'dia_selects' })}
                                                 className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm ml-4"
                                             >
                                                 수정
@@ -448,13 +564,12 @@
                                                 <button
                                                     key={type}
                                                     onClick={() => setDiaTypeTab(type)}
-                                                    className={`px-3 md:px-4 py-2 font-medium rounded-t-lg transition text-sm md:text-base whitespace-nowrap ${
-                                                        diaTypeTab === type
-                                                            ? 'bg-white text-blue-600 border-t-2 border-blue-500'
-                                                            : 'text-gray-600 hover:bg-gray-100'
-                                                    }`}
+                                                    className={`px-3 md:px-4 py-2 font-medium rounded-t-lg transition text-sm md:text-base whitespace-nowrap ${diaTypeTab === type
+                                                        ? 'bg-white text-blue-600 border-t-2 border-blue-500'
+                                                        : 'text-gray-600 hover:bg-gray-100'
+                                                        }`}
                                                 >
-                                                    {type === 'all' ? '전체' : type} 
+                                                    {type === 'all' ? '전체' : type}
                                                     <span className="ml-1 text-xs md:text-sm">
                                                         ({type === 'all' ? dias.length : dias.filter(d => d.type_name === type).length})
                                                     </span>
@@ -665,7 +780,7 @@
                                                     <input
                                                         placeholder="승무소 코드"
                                                         value={editing.office_code || ''}
-                                                        onChange={(e) => setEditing({...editing, office_code: e.target.value})}
+                                                        onChange={(e) => setEditing({ ...editing, office_code: e.target.value })}
                                                         className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
                                                     />
                                                 </div>
@@ -676,7 +791,7 @@
                                                     <textarea
                                                         placeholder="예: 1번,2번,3번"
                                                         value={Array.isArray(editing.dia_turns1) ? editing.dia_turns1.join(',') : editing.dia_turns1 || ''}
-                                                        onChange={(e) => setEditing({...editing, dia_turns1: e.target.value.split(',').map(s => s.trim()).filter(Boolean)})}
+                                                        onChange={(e) => setEditing({ ...editing, dia_turns1: e.target.value })}
                                                         className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
                                                         rows="10"
                                                     />
@@ -688,7 +803,7 @@
                                                     <textarea
                                                         placeholder="예: A번,B번,C번"
                                                         value={Array.isArray(editing.dia_turns2) ? editing.dia_turns2.join(',') : editing.dia_turns2 || ''}
-                                                        onChange={(e) => setEditing({...editing, dia_turns2: e.target.value.split(',').map(s => s.trim()).filter(Boolean)})}
+                                                        onChange={(e) => setEditing({ ...editing, dia_turns2: e.target.value })}
                                                         className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
                                                         rows="10"
                                                     />
@@ -700,7 +815,7 @@
                                                     <textarea
                                                         placeholder="예: 휴무1,휴무2"
                                                         value={Array.isArray(editing.dia_turns3) ? editing.dia_turns3.join(',') : editing.dia_turns3 || ''}
-                                                        onChange={(e) => setEditing({...editing, dia_turns3: e.target.value.split(',').map(s => s.trim()).filter(Boolean)})}
+                                                        onChange={(e) => setEditing({ ...editing, dia_turns3: e.target.value })}
                                                         className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
                                                         rows="10"
                                                     />
@@ -712,7 +827,7 @@
                                                     <textarea
                                                         placeholder="예: 예비1,예비2"
                                                         value={Array.isArray(editing.sub_turns) ? editing.sub_turns.join(',') : editing.sub_turns || ''}
-                                                        onChange={(e) => setEditing({...editing, sub_turns: e.target.value.split(',').map(s => s.trim()).filter(Boolean)})}
+                                                        onChange={(e) => setEditing({ ...editing, sub_turns: e.target.value })}
                                                         className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
                                                         rows="10"
                                                     />
@@ -724,7 +839,7 @@
                                                     <textarea
                                                         placeholder="예: 평일,주말,공휴일"
                                                         value={Array.isArray(editing.dia_selects) ? editing.dia_selects.join(',') : editing.dia_selects || ''}
-                                                        onChange={(e) => setEditing({...editing, dia_selects: e.target.value.split(',').map(s => s.trim()).filter(Boolean)})}
+                                                        onChange={(e) => setEditing({ ...editing, dia_selects: e.target.value })}
                                                         className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
                                                         rows="10"
                                                     />
@@ -736,96 +851,96 @@
                                             <div className="grid grid-cols-2 gap-4">
                                                 <div>
                                                     <label className="block text-sm font-medium text-gray-700 mb-2">다이아 ID *</label>
-                                                    <input 
-                                                        placeholder="예: 대1" 
-                                                        value={editing.dia_id || ''} 
-                                                        onChange={(e) => setEditing({...editing, dia_id: e.target.value})} 
-                                                        className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none" 
+                                                    <input
+                                                        placeholder="예: 대1"
+                                                        value={editing.dia_id || ''}
+                                                        onChange={(e) => setEditing({ ...editing, dia_id: e.target.value })}
+                                                        className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
                                                     />
                                                 </div>
                                                 <div>
                                                     <label className="block text-sm font-medium text-gray-700 mb-2">타입명 *</label>
-                                                    <input 
-                                                        placeholder="예: 평일" 
-                                                        value={editing.type_name || ''} 
-                                                        onChange={(e) => setEditing({...editing, type_name: e.target.value})} 
-                                                        className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none" 
+                                                    <input
+                                                        placeholder="예: 평일"
+                                                        value={editing.type_name || ''}
+                                                        onChange={(e) => setEditing({ ...editing, type_name: e.target.value })}
+                                                        className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
                                                     />
                                                 </div>
                                             </div>
                                             <div>
                                                 <label className="block text-sm font-medium text-gray-700 mb-2">출근시간</label>
-                                                <input 
-                                                    placeholder="예: 05:00" 
-                                                    value={editing.work_time || ''} 
-                                                    onChange={(e) => setEditing({...editing, work_time: e.target.value})} 
-                                                    className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none" 
+                                                <input
+                                                    placeholder="예: 05:00"
+                                                    value={editing.work_time || ''}
+                                                    onChange={(e) => setEditing({ ...editing, work_time: e.target.value })}
+                                                    className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
                                                 />
                                             </div>
                                             <div className="grid grid-cols-2 gap-4">
                                                 <div>
                                                     <label className="block text-sm font-medium text-gray-700 mb-2">전반사업 시간</label>
-                                                    <input 
-                                                        placeholder="예: 05:30" 
-                                                        value={editing.first_time || ''} 
-                                                        onChange={(e) => setEditing({...editing, first_time: e.target.value})} 
-                                                        className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none" 
+                                                    <input
+                                                        placeholder="예: 05:30"
+                                                        value={editing.first_time || ''}
+                                                        onChange={(e) => setEditing({ ...editing, first_time: e.target.value })}
+                                                        className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
                                                     />
                                                 </div>
                                                 <div>
                                                     <label className="block text-sm font-medium text-gray-700 mb-2">전반 열차번호</label>
-                                                    <input 
-                                                        placeholder="예: 101" 
-                                                        value={editing.num_tr1 || ''} 
-                                                        onChange={(e) => setEditing({...editing, num_tr1: e.target.value})} 
-                                                        className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none" 
+                                                    <input
+                                                        placeholder="예: 101"
+                                                        value={editing.num_tr1 || ''}
+                                                        onChange={(e) => setEditing({ ...editing, num_tr1: e.target.value })}
+                                                        className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
                                                     />
                                                 </div>
                                             </div>
                                             <div className="grid grid-cols-2 gap-4">
                                                 <div>
                                                     <label className="block text-sm font-medium text-gray-700 mb-2">후반사업 시간</label>
-                                                    <input 
-                                                        placeholder="예: 13:30" 
-                                                        value={editing.second_time || ''} 
-                                                        onChange={(e) => setEditing({...editing, second_time: e.target.value})} 
-                                                        className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none" 
+                                                    <input
+                                                        placeholder="예: 13:30"
+                                                        value={editing.second_time || ''}
+                                                        onChange={(e) => setEditing({ ...editing, second_time: e.target.value })}
+                                                        className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
                                                     />
                                                 </div>
                                                 <div>
                                                     <label className="block text-sm font-medium text-gray-700 mb-2">후반 열차번호</label>
-                                                    <input 
-                                                        placeholder="예: 201" 
-                                                        value={editing.num_tr2 || ''} 
-                                                        onChange={(e) => setEditing({...editing, num_tr2: e.target.value})} 
-                                                        className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none" 
+                                                    <input
+                                                        placeholder="예: 201"
+                                                        value={editing.num_tr2 || ''}
+                                                        onChange={(e) => setEditing({ ...editing, num_tr2: e.target.value })}
+                                                        className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
                                                     />
                                                 </div>
                                             </div>
                                             <div className="grid grid-cols-2 gap-4">
                                                 <div>
                                                     <label className="block text-sm font-medium text-gray-700 mb-2">총 근무시간</label>
-                                                    <input 
-                                                        placeholder="예: 08:00" 
-                                                        value={editing.total_time || ''} 
-                                                        onChange={(e) => setEditing({...editing, total_time: e.target.value})} 
-                                                        className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none" 
+                                                    <input
+                                                        placeholder="예: 08:00"
+                                                        value={editing.total_time || ''}
+                                                        onChange={(e) => setEditing({ ...editing, total_time: e.target.value })}
+                                                        className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
                                                     />
                                                 </div>
                                                 <div>
                                                     <label className="block text-sm font-medium text-gray-700 mb-2">세 번째 시간 (선택)</label>
-                                                    <input 
-                                                        placeholder="예: 21:30" 
-                                                        value={editing.third_time || ''} 
-                                                        onChange={(e) => setEditing({...editing, third_time: e.target.value})} 
-                                                        className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none" 
+                                                    <input
+                                                        placeholder="예: 21:30"
+                                                        value={editing.third_time || ''}
+                                                        onChange={(e) => setEditing({ ...editing, third_time: e.target.value })}
+                                                        className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
                                                     />
                                                 </div>
                                             </div>
                                         </>
                                     )}
                                 </div>
-                                
+
                                 <div className="flex-shrink-0 flex gap-3 pt-4 border-t mt-4">
                                     <button
                                         onClick={() => tab === 'office' ? saveOffice(editing) : saveDia(editing)}
@@ -859,4 +974,5 @@
         ReactDOM.createRoot(document.getElementById('root')).render(<App />);
     </script>
 </body>
+
 </html>
