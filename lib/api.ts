@@ -1,9 +1,9 @@
-import { supabase } from "@/lib/supabase";
+import { getSupabase } from "@/lib/supabase";
 import { parsePostgresArray, toPostgresArray } from "@/lib/utils";
 import type { Office, Dia, OfficeArrayField } from "@/types";
 
 export async function fetchOfficeList(): Promise<string[]> {
-  const { data, error } = await supabase
+  const { data, error } = await getSupabase()
     .from("office")
     .select("office_name")
     .order("office_name");
@@ -15,7 +15,7 @@ export async function fetchOfficeList(): Promise<string[]> {
 export async function fetchOfficeInfo(
   officeName: string
 ): Promise<Office | null> {
-  const { data, error } = await supabase
+  const { data, error } = await getSupabase()
     .from("office")
     .select("*")
     .eq("office_name", officeName)
@@ -39,7 +39,7 @@ export async function updateOfficeField(
   field: OfficeArrayField,
   values: string[]
 ) {
-  const { error } = await supabase
+  const { error } = await getSupabase()
     .from("office")
     .update({ [field]: toPostgresArray(values) })
     .eq("office_name", officeName);
@@ -48,7 +48,7 @@ export async function updateOfficeField(
 }
 
 export async function fetchDias(officeName: string): Promise<Dia[]> {
-  const { data, error } = await supabase
+  const { data, error } = await getSupabase()
     .from("dia")
     .select("*")
     .eq("office_name", officeName)
@@ -59,13 +59,13 @@ export async function fetchDias(officeName: string): Promise<Dia[]> {
 }
 
 export async function createDia(dia: Omit<Dia, "id">) {
-  const { error } = await supabase.from("dia").insert(dia);
+  const { error } = await getSupabase().from("dia").insert(dia);
   if (error) throw error;
 }
 
 export async function updateDia(id: number, dia: Partial<Dia>) {
   const { id: _, ...updateData } = dia as Dia;
-  const { error } = await supabase
+  const { error } = await getSupabase()
     .from("dia")
     .update(updateData)
     .eq("id", id);
@@ -73,7 +73,7 @@ export async function updateDia(id: number, dia: Partial<Dia>) {
 }
 
 export async function deleteDia(id: number) {
-  const { error } = await supabase.from("dia").delete().eq("id", id);
+  const { error } = await getSupabase().from("dia").delete().eq("id", id);
   if (error) throw error;
 }
 
