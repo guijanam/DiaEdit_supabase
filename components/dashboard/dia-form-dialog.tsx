@@ -72,8 +72,13 @@ export function DiaFormDialog({ dia, open, onClose }: DiaFormDialogProps) {
   };
 
   return (
-    <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
-      <DialogContent className="max-h-[85vh] max-w-2xl overflow-hidden flex flex-col">
+    <Dialog open={open} onOpenChange={() => {}}>
+      <DialogContent
+        className="max-h-[85vh] max-w-2xl overflow-hidden flex flex-col"
+        onInteractOutside={(e) => e.preventDefault()}
+        onEscapeKeyDown={(e) => e.preventDefault()}
+        showCloseButton={false}
+      >
         <DialogHeader>
           <DialogTitle>
             {isEditing ? "다이아 수정" : "다이아 추가"}

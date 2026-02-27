@@ -81,8 +81,13 @@ export function ArrayFieldEditor({
   const colorClass = FIELD_COLORS[field];
 
   return (
-    <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
-      <DialogContent className="max-h-[85vh] max-w-2xl overflow-hidden flex flex-col">
+    <Dialog open={open} onOpenChange={() => {}}>
+      <DialogContent
+        className="max-h-[85vh] max-w-2xl overflow-hidden flex flex-col"
+        onInteractOutside={(e) => e.preventDefault()}
+        onEscapeKeyDown={(e) => e.preventDefault()}
+        showCloseButton={false}
+      >
         <DialogHeader>
           <DialogTitle>{FIELD_LABELS[field]} 수정</DialogTitle>
         </DialogHeader>
