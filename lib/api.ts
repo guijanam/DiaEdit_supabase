@@ -64,7 +64,12 @@ export async function createDia(dia: Omit<Dia, "id">) {
 }
 
 export async function updateDia(id: number, dia: Partial<Dia>) {
-  const { id: _, ...updateData } = dia as Dia;
+  const {
+    id: _,
+    office_name: _on,
+    office_id: _oi,
+    ...updateData
+  } = dia as Dia;
   const { error } = await getSupabase()
     .from("dia")
     .update(updateData)
