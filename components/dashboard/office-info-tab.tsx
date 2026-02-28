@@ -55,11 +55,8 @@ export function OfficeInfoTab() {
 
   return (
     <div className="space-y-4">
-      <h2 className="text-xl font-semibold">승무소 기본 정보</h2>
-
-      <div className="rounded-lg bg-muted p-4">
-        <p className="text-sm text-muted-foreground">승무소명</p>
-        <p className="text-lg font-semibold">{officeInfo.office_name}</p>
+      <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800 dark:border-amber-800 dark:bg-amber-950 dark:text-amber-200">
+        토요일이 휴일에 해당하는 승무소는 토요일 관련 테이블을 수정 할 필요가 없습니다.
       </div>
 
       {FIELD_CONFIG.map(({ field, label, color, badgeColor }) => (
