@@ -59,7 +59,19 @@ export async function fetchDias(officeName: string): Promise<Dia[]> {
 }
 
 export async function createDia(dia: Omit<Dia, "id">) {
-  const { error } = await getSupabase().from("dia").insert(dia);
+  // 현재 최대 id 조회하여 시퀀스 충돌 방지
+  const { data: maxData } = await getSupabase()
+    .from("dia")
+    .select("id")
+    .order("id", { ascending: false })
+    .limit(1)
+    .single();
+
+  const nextId = (maxData?.id ?? 0) + 1;
+
+  const { error } = await getSupabase()
+    .from("dia")
+    .insert({ ...dia, id: nextId });
   if (error) throw error;
 }
 

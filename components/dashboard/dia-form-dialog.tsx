@@ -52,7 +52,7 @@ export function DiaFormDialog({ dia, open, onClose }: DiaFormDialogProps) {
       const diaData = {
         ...form,
         office_name: officeName,
-        office_id: officeInfo?.office_id ?? 0,
+        office_id: officeInfo?.office_code ?? 0,
       };
 
       if (isEditing) {

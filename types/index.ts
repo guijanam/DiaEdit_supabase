@@ -1,7 +1,6 @@
 export interface Office {
   office_name: string;
-  office_id: number;
-  office_code: string;
+  office_code: number;
   dia_turns1: string[];
   dia_turns2: string[];
   dia_turns3: string[];
