@@ -74,7 +74,12 @@ export default function LoginPage() {
               <Train className="h-6 w-6 text-primary" />
             </div>
             <CardTitle className="text-2xl">승무소 Dia관리 시스템</CardTitle>
-            <CardDescription className="flex items-center justify-center gap-1">(문의:02b2min2@kakao.com)<a href="mailto:02b2min2@kakao.com" title="이메일 보내기"><Mail className="h-4 w-4 text-muted-foreground hover:text-primary cursor-pointer" /></a></CardDescription>
+            <CardDescription className="flex items-center justify-center gap-1">
+              <span>(문의:02b2min2@kakao.com)</span>
+              <a href="mailto:02b2min2@kakao.com" title="이메일 보내기">
+                <Mail className="h-4 w-4 text-muted-foreground hover:text-primary cursor-pointer" />
+              </a>
+            </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             {error && (
