@@ -12,7 +12,7 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { X, Plus } from "lucide-react";
+import { X, Plus, CornerDownRight } from "lucide-react";
 import { toast } from "sonner";
 import type { OfficeArrayField } from "@/types";
 
@@ -63,6 +63,12 @@ export function ArrayFieldEditor({
     setItems([...items, ""]);
   };
 
+  const insertItemAfter = (index: number) => {
+    const next = [...items];
+    next.splice(index + 1, 0, "");
+    setItems(next);
+  };
+
   const handleSave = async () => {
     setSaving(true);
     try {
@@ -92,23 +98,33 @@ export function ArrayFieldEditor({
           <DialogTitle>{FIELD_LABELS[field]} 수정</DialogTitle>
         </DialogHeader>
         <div className="flex-1 space-y-3 overflow-y-auto pr-2">
-          <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4">
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
             {items.map((item, index) => (
               <div
                 key={index}
-                className={`flex items-center gap-1 rounded-lg border px-3 py-2 ${colorClass}`}
+                className={`flex items-center gap-0.5 rounded-lg border pl-2 pr-0.5 py-1 ${colorClass}`}
               >
-                <span className="text-sm font-semibold">{index + 1}.</span>
+                <span className="shrink-0 text-xs font-semibold">{index + 1}.</span>
                 <Input
                   value={item}
                   onChange={(e) => updateItem(index, e.target.value)}
-                  className="h-7 flex-1 border-0 bg-transparent px-1 text-sm shadow-none focus-visible:ring-0"
+                  className="h-7 min-w-0 flex-1 border-0 bg-transparent px-0.5 text-sm shadow-none focus-visible:ring-0"
                 />
                 <button
-                  onClick={() => removeItem(index)}
-                  className="text-destructive hover:text-destructive/80"
+                  onClick={() => insertItemAfter(index)}
+                  className="shrink-0 p-1.5 opacity-70 hover:opacity-100"
+                  title="아래에 추가"
+                  type="button"
                 >
-                  <X className="h-4 w-4" />
+                  <CornerDownRight className="h-3.5 w-3.5" />
+                </button>
+                <button
+                  onClick={() => removeItem(index)}
+                  className="shrink-0 p-1.5 text-destructive hover:text-destructive/80"
+                  title="삭제"
+                  type="button"
+                >
+                  <X className="h-3.5 w-3.5" />
                 </button>
               </div>
             ))}
