@@ -75,10 +75,13 @@ export default function LoginPage() {
             </div>
             <CardTitle className="text-2xl">승무소 Dia관리 시스템</CardTitle>
             <CardDescription className="flex items-center justify-center gap-1">
-              <span>(문의:02b2min2@kakao.com)</span>
+              <span>(비번문의:02b2min2@kakao.com)</span>
               <a href="mailto:02b2min2@kakao.com" title="이메일 보내기">
                 <Mail className="h-4 w-4 text-muted-foreground hover:text-primary cursor-pointer" />
               </a>
+            </CardDescription>
+            <CardDescription>
+              각 승무소의 근무수정은 개발자가 관여하지 않고 있습니다.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
