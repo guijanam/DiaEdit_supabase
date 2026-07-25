@@ -5,6 +5,19 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
+export function formatDateTime(iso: string | null): string {
+  if (!iso) return "기록 없음";
+  const d = new Date(iso);
+  return d.toLocaleString("ko-KR", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  });
+}
+
 export function parsePostgresArray(value: unknown): string[] {
   if (!value) return [];
   if (Array.isArray(value)) return value;

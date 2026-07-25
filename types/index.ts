@@ -6,6 +6,7 @@ export interface Office {
   dia_turns3: string[];
   sub_turns: string[];
   dia_selects: string[];
+  dia_updated_at: string | null;
 }
 
 export interface Dia {

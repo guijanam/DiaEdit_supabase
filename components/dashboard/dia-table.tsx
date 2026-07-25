@@ -24,7 +24,7 @@ interface DiaTableProps {
 }
 
 export function DiaTable({ dias, onEdit }: DiaTableProps) {
-  const { reloadData } = useAuth();
+  const { reloadData, officeName } = useAuth();
   const [deleteId, setDeleteId] = useState<number | null>(null);
   const [deleting, setDeleting] = useState(false);
 
@@ -32,7 +32,7 @@ export function DiaTable({ dias, onEdit }: DiaTableProps) {
     if (deleteId === null) return;
     setDeleting(true);
     try {
-      await api.deleteDia(deleteId);
+      await api.deleteDia(deleteId, officeName);
       toast.success("삭제 완료!");
       await reloadData();
     } catch (e) {

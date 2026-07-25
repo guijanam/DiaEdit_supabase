@@ -12,7 +12,8 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { X, Plus, CornerDownRight } from "lucide-react";
+import { X, Plus, CornerDownRight, Copy } from "lucide-react";
+import { ConfirmDialog } from "@/components/composite/confirm-dialog";
 import { toast } from "sonner";
 import type { OfficeArrayField } from "@/types";
 
@@ -32,6 +33,12 @@ const FIELD_COLORS: Record<OfficeArrayField, string> = {
   dia_selects: "bg-indigo-50 border-indigo-200 dark:bg-indigo-950 dark:border-indigo-800 text-indigo-600 dark:text-indigo-400",
 };
 
+// 기관사↔차장 교번순서는 서로 같거나 거의 같은 경우가 많아 불러오기(복사)를 허용
+const COPY_SOURCE: Partial<Record<OfficeArrayField, OfficeArrayField>> = {
+  dia_turns1: "dia_turns2", // 기관사 수정 중 → 차장 내용 불러오기
+  dia_turns2: "dia_turns1", // 차장 수정 중 → 기관사 내용 불러오기
+};
+
 interface ArrayFieldEditorProps {
   field: OfficeArrayField;
   open: boolean;
@@ -48,6 +55,15 @@ export function ArrayFieldEditor({
     () => [...(officeInfo?.[field] || [])]
   );
   const [saving, setSaving] = useState(false);
+  const [confirmCopy, setConfirmCopy] = useState(false);
+
+  const sourceField = COPY_SOURCE[field];
+
+  const applyCopy = () => {
+    if (!sourceField) return;
+    setItems([...(officeInfo?.[sourceField] || [])]);
+    setConfirmCopy(false);
+  };
 
   const updateItem = (index: number, value: string) => {
     const next = [...items];
@@ -95,7 +111,19 @@ export function ArrayFieldEditor({
         showCloseButton={false}
       >
         <DialogHeader>
-          <DialogTitle>{FIELD_LABELS[field]} 수정</DialogTitle>
+          <div className="flex items-center justify-between gap-2 pr-6">
+            <DialogTitle>{FIELD_LABELS[field]} 수정</DialogTitle>
+            {sourceField && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setConfirmCopy(true)}
+              >
+                <Copy className="mr-1 h-3.5 w-3.5" />
+                {FIELD_LABELS[sourceField]} 교번 불러오기
+              </Button>
+            )}
+          </div>
         </DialogHeader>
         <div className="flex-1 space-y-3 overflow-y-auto pr-2">
           <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
@@ -147,6 +175,17 @@ export function ArrayFieldEditor({
           </Button>
         </DialogFooter>
       </DialogContent>
+
+      {sourceField && (
+        <ConfirmDialog
+          open={confirmCopy}
+          onOpenChange={setConfirmCopy}
+          title="교번 불러오기"
+          description={`현재 편집 중인 목록을 ${FIELD_LABELS[sourceField]} 교번순서로 전체 교체합니다. 저장 전 편집 내용은 사라집니다.`}
+          onConfirm={applyCopy}
+          confirmText="불러오기"
+        />
+      )}
     </Dialog>
   );
 }

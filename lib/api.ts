@@ -47,6 +47,14 @@ export async function updateOfficeField(
   if (error) throw error;
 }
 
+export async function touchOfficeDiaUpdatedAt(officeName: string) {
+  const { error } = await getSupabase()
+    .from("office")
+    .update({ dia_updated_at: new Date().toISOString() })
+    .eq("office_name", officeName);
+  if (error) throw error;
+}
+
 export async function fetchDias(officeName: string): Promise<Dia[]> {
   const { data, error } = await getSupabase()
     .from("dia")
@@ -73,6 +81,8 @@ export async function createDia(dia: Omit<Dia, "id">) {
     .from("dia")
     .insert({ ...dia, id: nextId });
   if (error) throw error;
+
+  await touchOfficeDiaUpdatedAt(dia.office_name);
 }
 
 export async function updateDia(id: number, dia: Partial<Dia>) {
@@ -87,11 +97,17 @@ export async function updateDia(id: number, dia: Partial<Dia>) {
     .update(updateData)
     .eq("id", id);
   if (error) throw error;
+
+  if (dia.office_name) {
+    await touchOfficeDiaUpdatedAt(dia.office_name);
+  }
 }
 
-export async function deleteDia(id: number) {
+export async function deleteDia(id: number, officeName: string) {
   const { error } = await getSupabase().from("dia").delete().eq("id", id);
   if (error) throw error;
+
+  await touchOfficeDiaUpdatedAt(officeName);
 }
 
 export async function authenticate(
