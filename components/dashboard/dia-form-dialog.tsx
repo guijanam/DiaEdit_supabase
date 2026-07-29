@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useAuth } from "@/lib/auth-context";
 import * as api from "@/lib/api";
+import { uploadDiaImage } from "@/lib/storage-api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -13,6 +14,7 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
+import { ImageUp } from "lucide-react";
 import { toast } from "sonner";
 import type { Dia } from "@/types";
 
@@ -36,11 +38,37 @@ export function DiaFormDialog({ dia, open, onClose }: DiaFormDialogProps) {
     third_time: dia.third_time || "",
   });
   const [saving, setSaving] = useState(false);
+  const [uploadingField, setUploadingField] = useState<
+    "total_time" | "third_time" | null
+  >(null);
+  const totalTimeFileRef = useRef<HTMLInputElement>(null);
+  const thirdTimeFileRef = useRef<HTMLInputElement>(null);
 
   const isEditing = !!dia.id;
 
   const update = (field: string, value: string) =>
     setForm((prev) => ({ ...prev, [field]: value }));
+
+  const handleImageUpload = async (
+    field: "total_time" | "third_time",
+    file: File | undefined
+  ) => {
+    if (!file) return;
+    setUploadingField(field);
+    try {
+      const url = await uploadDiaImage(
+        file,
+        officeInfo?.office_code ?? 0,
+        field
+      );
+      update(field, url);
+      toast.success("이미지 업로드 완료!");
+    } catch (e) {
+      toast.error(`업로드 실패: ${e instanceof Error ? e.message : String(e)}`);
+    } finally {
+      setUploadingField(null);
+    }
+  };
 
   const handleSave = async () => {
     if (!form.dia_id || !form.type_name) {
@@ -150,19 +178,63 @@ export function DiaFormDialog({ dia, open, onClose }: DiaFormDialogProps) {
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label>총 근무시간</Label>
-              <Input
-                placeholder="예: 08:00"
-                value={form.total_time}
-                onChange={(e) => update("total_time", e.target.value)}
-              />
+              <div className="flex gap-1">
+                <Input
+                  placeholder="예: 08:00 또는 이미지 URL"
+                  value={form.total_time}
+                  onChange={(e) => update("total_time", e.target.value)}
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="icon"
+                  title="이미지 업로드"
+                  disabled={uploadingField === "total_time"}
+                  onClick={() => totalTimeFileRef.current?.click()}
+                >
+                  <ImageUp />
+                </Button>
+                <input
+                  ref={totalTimeFileRef}
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                  hidden
+                  onChange={(e) => {
+                    handleImageUpload("total_time", e.target.files?.[0]);
+                    e.target.value = "";
+                  }}
+                />
+              </div>
             </div>
             <div className="space-y-2">
               <Label>세 번째 시간 (선택)</Label>
-              <Input
-                placeholder="예: 21:30"
-                value={form.third_time}
-                onChange={(e) => update("third_time", e.target.value)}
-              />
+              <div className="flex gap-1">
+                <Input
+                  placeholder="예: 21:30 또는 이미지 URL"
+                  value={form.third_time}
+                  onChange={(e) => update("third_time", e.target.value)}
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="icon"
+                  title="이미지 업로드"
+                  disabled={uploadingField === "third_time"}
+                  onClick={() => thirdTimeFileRef.current?.click()}
+                >
+                  <ImageUp />
+                </Button>
+                <input
+                  ref={thirdTimeFileRef}
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                  hidden
+                  onChange={(e) => {
+                    handleImageUpload("third_time", e.target.files?.[0]);
+                    e.target.value = "";
+                  }}
+                />
+              </div>
             </div>
           </div>
         </div>
