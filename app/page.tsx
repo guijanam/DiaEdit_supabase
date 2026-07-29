@@ -21,7 +21,7 @@ import {
   SelectItem,
 } from "@/components/ui/select";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { AlertCircle, Mail, Train } from "lucide-react";
+import { AlertCircle, Mail, Train, ScanLine } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/lib/auth-context";
 import * as api from "@/lib/api";
@@ -121,13 +121,25 @@ export default function LoginPage() {
               />
             </div>
           </CardContent>
-          <CardFooter>
+          <CardFooter className="flex flex-col gap-3">
             <Button
               className="w-full"
               onClick={handleLogin}
               disabled={isLoading || !officeName || !password}
             >
               {isLoading ? "인증 중..." : "로그인"}
+            </Button>
+            <div className="relative w-full text-center text-xs text-muted-foreground">
+              <div className="absolute inset-x-0 top-1/2 -z-10 border-t" />
+              <span className="bg-card px-2">또는</span>
+            </div>
+            <Button
+              variant="outline"
+              className="w-full"
+              onClick={() => router.push("/upload")}
+            >
+              <ScanLine className="mr-1 h-4 w-4" />
+              근무표 자동 업로드
             </Button>
           </CardFooter>
         </Card>

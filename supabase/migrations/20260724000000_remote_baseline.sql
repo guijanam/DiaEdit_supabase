@@ -1,0 +1,1 @@
+-- Already applied on remote before this repo tracked migrations locally.

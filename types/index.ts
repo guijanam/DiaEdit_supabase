@@ -31,3 +31,26 @@ export type OfficeArrayField =
   | "sub_turns"
   | "dia_selects";
 
+export interface ExtractedDiaRow {
+  dia_id: string;
+  type_name: string;
+  work_time: string;
+  first_time: string;
+  second_time: string;
+  third_time: string;
+  total_time: string;
+  num_tr1: string;
+  num_tr2: string;
+  _confidence?: "high" | "low";
+}
+
+export interface DiaExtractionBatch {
+  id: number;
+  office_name: string;
+  status: "pending" | "approved" | "rejected";
+  rows: ExtractedDiaRow[];
+  warning: string | null;
+  created_at: string;
+  reviewed_at: string | null;
+}
+

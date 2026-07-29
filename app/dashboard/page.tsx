@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { Container } from "@/components/layout/container";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
@@ -7,9 +8,11 @@ import { useAuth } from "@/lib/auth-context";
 import { formatDateTime } from "@/lib/utils";
 import { OfficeInfoTab } from "@/components/dashboard/office-info-tab";
 import { DiaManagementTab } from "@/components/dashboard/dia-management-tab";
+import { ExtractionInboxTab } from "@/components/dashboard/extraction-inbox-tab";
 
 export default function DashboardPage() {
   const { dias, officeInfo } = useAuth();
+  const [pendingCount, setPendingCount] = useState(0);
 
   return (
     <Container className="py-6">
@@ -28,12 +31,18 @@ export default function DashboardPage() {
             <TabsTrigger value="dia">
               다이아 관리 ({dias.length})
             </TabsTrigger>
+            <TabsTrigger value="inbox">
+              자동추출 대기함 ({pendingCount})
+            </TabsTrigger>
           </TabsList>
           <TabsContent value="office" className="p-6">
             <OfficeInfoTab />
           </TabsContent>
           <TabsContent value="dia" className="p-0">
             <DiaManagementTab />
+          </TabsContent>
+          <TabsContent value="inbox" className="p-0">
+            <ExtractionInboxTab onCountChange={setPendingCount} />
           </TabsContent>
         </Tabs>
       </Card>
