@@ -136,6 +136,7 @@ export function DiaTable({ dias, onEdit }: DiaTableProps) {
               <TableHead>출근시간</TableHead>
               <TableHead>전반사업</TableHead>
               <TableHead>후반사업</TableHead>
+              <TableHead>세 번째</TableHead>
               <TableHead>총근무</TableHead>
               <TableHead className="text-right">관리</TableHead>
             </TableRow>
@@ -166,6 +167,7 @@ export function DiaTable({ dias, onEdit }: DiaTableProps) {
                     </div>
                   )}
                 </TableCell>
+                <TableCell>{dia.third_time || "-"}</TableCell>
                 <TableCell>{dia.total_time || "-"}</TableCell>
                 <TableCell className="text-right">
                   <Button
