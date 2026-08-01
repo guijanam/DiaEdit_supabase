@@ -54,3 +54,39 @@ export interface DiaExtractionBatch {
   reviewed_at: string | null;
 }
 
+export interface DiaCalendarRow {
+  diaId: string;
+  typeName: string;
+  workTime: string | null;
+  firstTime: string | null;
+  numTr1: string | null;
+  secondTime: string | null;
+  numTr2: string | null;
+  thirdTime: string | null;
+  totalTime: string | null;
+}
+
+export interface DiaCalendarOffice {
+  officeName: string;
+  diaTurns1: string;
+  diaTurns2: string;
+  diaTurns3: string;
+  subTurns: string;
+  diaSelects: string;
+  createdAt: number;
+  dias: DiaCalendarRow[];
+}
+
+export interface DiaCalendarExport {
+  version: number;
+  exportedAt: string;
+  offices: DiaCalendarOffice[];
+}
+
+export type DiaCalendarArrayField =
+  | "diaTurns1"
+  | "diaTurns2"
+  | "diaTurns3"
+  | "subTurns"
+  | "diaSelects";
+

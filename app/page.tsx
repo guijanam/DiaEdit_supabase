@@ -21,7 +21,7 @@ import {
   SelectItem,
 } from "@/components/ui/select";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { AlertCircle, Mail, Train, ScanLine } from "lucide-react";
+import { AlertCircle, Mail, Train, ScanLine, FileJson } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/lib/auth-context";
 import * as api from "@/lib/api";
@@ -133,13 +133,17 @@ export default function LoginPage() {
               <div className="absolute inset-x-0 top-1/2 -z-10 border-t" />
               <span className="bg-card px-2">또는</span>
             </div>
+            <Button variant="outline" className="w-full" disabled>
+              <ScanLine className="mr-1 h-4 w-4" />
+              근무표 자동 업로드 (준비중)
+            </Button>
             <Button
               variant="outline"
               className="w-full"
-              onClick={() => router.push("/upload")}
+              onClick={() => router.push("/json-editor")}
             >
-              <ScanLine className="mr-1 h-4 w-4" />
-              근무표 자동 업로드
+              <FileJson className="mr-1 h-4 w-4" />
+              근무표 JSON 편집
             </Button>
           </CardFooter>
         </Card>
