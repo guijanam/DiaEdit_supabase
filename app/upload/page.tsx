@@ -67,7 +67,7 @@ export default function UploadPage() {
           variant="ghost"
           size="sm"
           className="w-fit"
-          onClick={() => router.push("/")}
+          onClick={() => router.push("/login")}
         >
           <ArrowLeft className="mr-1 h-4 w-4" />
           로그인 화면으로
@@ -150,7 +150,7 @@ export default function UploadPage() {
                   승무소 관리자가 확인 후 근무표에 반영합니다.
                 </p>
                 <div className="mt-2 flex gap-2">
-                  <Button variant="outline" onClick={() => router.push("/")}>
+                  <Button variant="outline" onClick={() => router.push("/login")}>
                     로그인 화면으로
                   </Button>
                   <Button

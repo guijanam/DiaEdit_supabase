@@ -14,7 +14,7 @@ function DashboardGuard({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (!isAuth) {
-      router.replace("/");
+      router.replace("/login");
     }
   }, [isAuth, router]);
 
@@ -35,7 +35,7 @@ function DashboardGuard({ children }: { children: React.ReactNode }) {
               size="sm"
               onClick={() => {
                 logout();
-                router.push("/");
+                router.push("/login");
               }}
             >
               <LogOut className="mr-1 h-4 w-4" />

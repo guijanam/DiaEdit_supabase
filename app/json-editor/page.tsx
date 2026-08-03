@@ -114,7 +114,7 @@ export default function JsonEditorPage() {
     <div className="min-h-screen bg-background">
       <Container className="flex max-w-4xl flex-col gap-4 py-8">
         <div className="flex items-center justify-between">
-          <Button variant="ghost" size="sm" className="w-fit" onClick={() => router.push("/")}>
+          <Button variant="ghost" size="sm" className="w-fit" onClick={() => router.push("/login")}>
             <ArrowLeft className="mr-1 h-4 w-4" />
             로그인 화면으로
           </Button>
