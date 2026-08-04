@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
 import {
   Select,
   SelectTrigger,
@@ -21,6 +22,7 @@ import {
 } from "@/components/ui/select";
 import { ArrowLeft, Download, FileJson, Plus, Search } from "lucide-react";
 import { toast } from "sonner";
+import { compareDiaId } from "@/lib/utils";
 import { JsonDropZone } from "@/components/json-editor/json-drop-zone";
 import { OfficeFieldsSection } from "@/components/json-editor/office-fields-section";
 import { DiaTable } from "@/components/json-editor/dia-table";
@@ -37,25 +39,37 @@ export default function JsonEditorPage() {
   const [data, setData] = useState<DiaCalendarExport | null>(null);
   const [fileName, setFileName] = useState("");
   const [officeIndex, setOfficeIndex] = useState(0);
+  const [typeTab, setTypeTab] = useState("all");
   const [search, setSearch] = useState("");
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const [addingDia, setAddingDia] = useState(false);
 
   const office = data?.offices[officeIndex] ?? null;
 
+  const diaTypes = useMemo(
+    () => ["all", ...new Set((office?.dias ?? []).map((d) => d.typeName).filter(Boolean))],
+    [office]
+  );
+
   const filteredDias = useMemo(() => {
     if (!office) return [];
-    const withIndex = office.dias.map((dia, index) => ({ dia, index }));
-    if (!search) return withIndex;
-    return withIndex.filter(({ dia }) =>
-      dia.diaId?.toLowerCase().includes(search.toLowerCase())
-    );
-  }, [office, search]);
+    let withIndex = office.dias.map((dia, index) => ({ dia, index }));
+    if (typeTab !== "all") {
+      withIndex = withIndex.filter(({ dia }) => dia.typeName === typeTab);
+    }
+    if (search) {
+      withIndex = withIndex.filter(({ dia }) =>
+        dia.diaId?.toLowerCase().includes(search.toLowerCase())
+      );
+    }
+    return [...withIndex].sort((a, b) => compareDiaId(a.dia.diaId, b.dia.diaId));
+  }, [office, typeTab, search]);
 
   const handleLoad = (loaded: DiaCalendarExport, name: string) => {
     setData(loaded);
     setFileName(name);
     setOfficeIndex(0);
+    setTypeTab("all");
     toast.success(`${name} 불러오기 완료 (승무소 ${loaded.offices.length}개)`);
   };
 
@@ -147,7 +161,10 @@ export default function JsonEditorPage() {
                     <div className="w-full max-w-xs">
                       <Select
                         value={String(officeIndex)}
-                        onValueChange={(v) => setOfficeIndex(Number(v))}
+                        onValueChange={(v) => {
+                          setOfficeIndex(Number(v));
+                          setTypeTab("all");
+                        }}
                       >
                         <SelectTrigger>
                           <SelectValue />
@@ -174,6 +191,36 @@ export default function JsonEditorPage() {
                     <OfficeFieldsSection office={office} onSave={handleArrayFieldSave} />
 
                     <div>
+                      {diaTypes.length > 1 && (
+                        <div className="mb-3 -mx-1 overflow-x-auto">
+                          <div className="flex min-w-max gap-1 px-1">
+                            {diaTypes.map((type) => {
+                              const count =
+                                type === "all"
+                                  ? office.dias.length
+                                  : office.dias.filter((d) => d.typeName === type).length;
+                              const isActive = typeTab === type;
+                              return (
+                                <button
+                                  key={type}
+                                  type="button"
+                                  onClick={() => setTypeTab(type)}
+                                  className={`whitespace-nowrap rounded-t-lg border-b-2 px-3 py-2 text-sm font-medium transition ${
+                                    isActive
+                                      ? "border-primary text-primary"
+                                      : "border-transparent text-muted-foreground hover:bg-muted"
+                                  }`}
+                                >
+                                  {type === "all" ? "전체" : type}
+                                  <Badge variant="secondary" className="ml-1.5 px-1.5 py-0 text-xs">
+                                    {count}
+                                  </Badge>
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      )}
                       <div className="mb-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                         <div className="relative flex-1 sm:max-w-xs">
                           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -214,7 +261,13 @@ export default function JsonEditorPage() {
 
       {(editingIndex !== null || addingDia) && office && (
         <DiaFormDialog
-          dia={editingIndex !== null ? office.dias[editingIndex] : null}
+          dia={
+            editingIndex !== null
+              ? office.dias[editingIndex]
+              : typeTab !== "all"
+                ? { typeName: typeTab }
+                : null
+          }
           open
           onClose={() => {
             setEditingIndex(null);

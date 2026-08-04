@@ -33,7 +33,7 @@ export function DiaFormDialog({ dia, open, onClose, onSave }: DiaFormDialogProps
     thirdTime: dia?.thirdTime || "",
   });
 
-  const isEditing = !!dia;
+  const isEditing = !!dia?.diaId;
 
   const update = (field: keyof typeof form, value: string) =>
     setForm((prev) => ({ ...prev, [field]: value }));

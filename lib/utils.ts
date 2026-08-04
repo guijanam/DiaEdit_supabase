@@ -36,10 +36,7 @@ export function toPostgresArray(values: string[]): string {
   return `{${values.join(",")}}`;
 }
 
-export function naturalSort(a: { dia_id?: string }, b: { dia_id?: string }) {
-  const aDiaId = a.dia_id || "";
-  const bDiaId = b.dia_id || "";
-
+export function compareDiaId(aDiaId: string, bDiaId: string) {
   const splitId = (str: string) => {
     const match = str.match(/^([가-힣]*)(\d+)$/);
     if (match) {
@@ -52,8 +49,8 @@ export function naturalSort(a: { dia_id?: string }, b: { dia_id?: string }) {
     return { text: str, num: 0 };
   };
 
-  const aParts = splitId(aDiaId);
-  const bParts = splitId(bDiaId);
+  const aParts = splitId(aDiaId || "");
+  const bParts = splitId(bDiaId || "");
 
   if (aParts.text !== bParts.text) {
     if (!aParts.text) return -1;
@@ -62,4 +59,8 @@ export function naturalSort(a: { dia_id?: string }, b: { dia_id?: string }) {
   }
 
   return aParts.num - bParts.num;
+}
+
+export function naturalSort(a: { dia_id?: string }, b: { dia_id?: string }) {
+  return compareDiaId(a.dia_id || "", b.dia_id || "");
 }
