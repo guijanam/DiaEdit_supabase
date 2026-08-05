@@ -21,7 +21,7 @@ import {
   SelectItem,
 } from "@/components/ui/select";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { AlertCircle, Mail, Train, ScanLine, FileJson } from "lucide-react";
+import { AlertCircle, Mail, Train, ScanLine, FileJson, Home } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/lib/auth-context";
 import * as api from "@/lib/api";
@@ -68,6 +68,15 @@ export default function LoginPage() {
   return (
     <div className="flex min-h-screen items-center justify-center px-4">
       <div className="w-full max-w-md">
+        <Button
+          variant="ghost"
+          size="sm"
+          className="mb-2"
+          onClick={() => router.push("/")}
+        >
+          <Home className="mr-1 h-4 w-4" />
+          홈으로
+        </Button>
         <Card>
           <CardHeader className="text-center">
             <div className="mx-auto mb-2 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
