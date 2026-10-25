@@ -138,13 +138,26 @@ export function DiaTable({ dias, onEdit }: DiaTableProps) {
               <TableHead>후반사업</TableHead>
               <TableHead>세 번째</TableHead>
               <TableHead>총근무</TableHead>
-              <TableHead className="text-right">관리</TableHead>
+              <TableHead className="text-right">삭제</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {dias.map((dia) => (
               <TableRow key={dia.id}>
-                <TableCell className="font-medium">{dia.dia_id}</TableCell>
+                <TableCell className="font-medium">
+                  <div className="flex items-center gap-1 whitespace-nowrap">
+                    <span>{dia.dia_id}</span>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      title={`${dia.dia_id} 수정`}
+                      aria-label={`${dia.dia_id} 수정`}
+                      onClick={() => onEdit(dia)}
+                    >
+                      <Pencil className="h-3.5 w-3.5" />
+                    </Button>
+                  </div>
+                </TableCell>
                 <TableCell>
                   <Badge variant="secondary" className="text-xs">
                     {dia.type_name}
@@ -170,13 +183,6 @@ export function DiaTable({ dias, onEdit }: DiaTableProps) {
                 <TableCell>{dia.third_time || "-"}</TableCell>
                 <TableCell>{dia.total_time || "-"}</TableCell>
                 <TableCell className="text-right">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => onEdit(dia)}
-                  >
-                    <Pencil className="h-3.5 w-3.5" />
-                  </Button>
                   <Button
                     variant="ghost"
                     size="sm"
