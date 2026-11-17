@@ -1,8 +1,7 @@
 "use client";
 
 import { useSyncExternalStore } from "react";
-import { Download } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import Image from "next/image";
 import { cn } from "@/lib/utils";
 
 const IOS_STORE_URL =
@@ -35,37 +34,45 @@ interface StoreBadgesProps {
 
 export function StoreBadges({ size = "default", className }: StoreBadgesProps) {
   const detected = usePlatform();
+  const badgeHeight = size === "lg" ? "h-14" : "h-11";
 
   return (
-    <div className={cn("flex flex-col gap-3 sm:flex-row", className)}>
-      <Button
-        asChild
-        size={size === "lg" ? "lg" : "default"}
-        variant={detected === "aos" ? "outline" : "default"}
-        className={cn(
-          detected !== "aos" &&
-            "bg-sky-500 text-white hover:bg-sky-600 dark:bg-sky-600 dark:hover:bg-sky-500"
-        )}
+    <div
+      className={cn(
+        "flex flex-col items-start gap-3 sm:flex-row sm:items-center",
+        // 안드로이드에서는 Google Play 배지를 먼저 보여준다.
+        detected === "aos" && "flex-col-reverse sm:flex-row-reverse sm:justify-end",
+        className
+      )}
+    >
+      <a
+        href={IOS_STORE_URL}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="transition-opacity hover:opacity-80"
       >
-        <a href={IOS_STORE_URL} target="_blank" rel="noopener noreferrer">
-          <Download />
-          App Store에서 다운로드
-        </a>
-      </Button>
-      <Button
-        asChild
-        size={size === "lg" ? "lg" : "default"}
-        variant={detected === "ios" ? "outline" : "default"}
-        className={cn(
-          detected !== "ios" &&
-            "bg-emerald-500 text-white hover:bg-emerald-600 dark:bg-emerald-600 dark:hover:bg-emerald-500"
-        )}
+        <Image
+          src="/badges/app-store.svg"
+          alt="App Store에서 다운로드"
+          width={120}
+          height={40}
+          className={cn("w-auto", badgeHeight)}
+        />
+      </a>
+      <a
+        href={AOS_STORE_URL}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="transition-opacity hover:opacity-80"
       >
-        <a href={AOS_STORE_URL} target="_blank" rel="noopener noreferrer">
-          <Download />
-          Google Play에서 다운로드
-        </a>
-      </Button>
+        <Image
+          src="/badges/google-play.png"
+          alt="Google Play에서 다운로드"
+          width={580}
+          height={170}
+          className={cn("w-auto", badgeHeight)}
+        />
+      </a>
     </div>
   );
 }

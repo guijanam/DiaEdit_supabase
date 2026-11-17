@@ -11,7 +11,7 @@ export function LandingDownloadCta() {
         <p className="max-w-md text-muted-foreground text-balance">
           iOS와 Android 모두 지원합니다. 지금 다운로드하고 내 근무를 한눈에 확인해보세요.
         </p>
-        <StoreBadges size="lg" />
+        <StoreBadges size="lg" className="items-center sm:items-center" />
       </Container>
     </section>
   );
