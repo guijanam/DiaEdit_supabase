@@ -20,6 +20,7 @@ export interface Dia {
   second_time: string;
   third_time: string;
   total_time: string;
+  night_time?: string | null;
   num_tr1: string;
   num_tr2: string;
 }

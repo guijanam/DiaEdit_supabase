@@ -83,6 +83,12 @@ export function DiaTable({ dias, onEdit }: DiaTableProps) {
                     <span className="ml-1 font-semibold">{dia.work_time}</span>
                   </div>
                 )}
+                {dia.night_time && (
+                  <div>
+                    <span className="text-xs text-muted-foreground">야간</span>
+                    <span className="ml-1 font-semibold">{dia.night_time}</span>
+                  </div>
+                )}
                 {dia.total_time && (
                   <div>
                     <span className="text-xs text-muted-foreground">총근무</span>
@@ -134,6 +140,7 @@ export function DiaTable({ dias, onEdit }: DiaTableProps) {
               <TableHead>다이아ID</TableHead>
               <TableHead>타입</TableHead>
               <TableHead>출근시간</TableHead>
+              <TableHead>야간시간</TableHead>
               <TableHead>전반사업</TableHead>
               <TableHead>후반사업</TableHead>
               <TableHead>세 번째</TableHead>
@@ -164,6 +171,7 @@ export function DiaTable({ dias, onEdit }: DiaTableProps) {
                   </Badge>
                 </TableCell>
                 <TableCell>{dia.work_time || "-"}</TableCell>
+                <TableCell>{dia.night_time || "-"}</TableCell>
                 <TableCell>
                   {dia.first_time || "-"}
                   {dia.num_tr1 && (

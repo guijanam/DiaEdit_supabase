@@ -28,6 +28,7 @@ const DIA_TEXT_FIELDS = [
   "dia_id",
   "type_name",
   "work_time",
+  "night_time",
   "first_time",
   "num_tr1",
   "second_time",
@@ -42,6 +43,7 @@ const FIELD_LABELS: Record<DiaTextField, string> = {
   dia_id: "다이아 ID",
   type_name: "타입명",
   work_time: "출근시간",
+  night_time: "야간시간",
   first_time: "전반사업 시간",
   num_tr1: "전반 열차번호",
   second_time: "후반사업 시간",
@@ -56,6 +58,7 @@ export function DiaFormDialog({ dia, open, onClose }: DiaFormDialogProps) {
     dia_id: dia.dia_id || "",
     type_name: dia.type_name || "",
     work_time: dia.work_time || "",
+    night_time: dia.night_time || "",
     first_time: dia.first_time || "",
     num_tr1: dia.num_tr1 || "",
     second_time: dia.second_time || "",
@@ -241,14 +244,25 @@ export function DiaFormDialog({ dia, open, onClose }: DiaFormDialogProps) {
               />
             </div>
           </div>
-          <div className="space-y-2">
-            <Label>출근시간</Label>
-            <Input
-              placeholder="예: 05:00"
-              value={form.work_time}
-              onFocus={(e) => handleInputFocus("work_time", e.currentTarget)}
-              onChange={(e) => update("work_time", e.target.value)}
-            />
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label>출근시간</Label>
+              <Input
+                placeholder="예: 05:00"
+                value={form.work_time}
+                onFocus={(e) => handleInputFocus("work_time", e.currentTarget)}
+                onChange={(e) => update("work_time", e.target.value)}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>야간시간</Label>
+              <Input
+                placeholder="예: 07:00"
+                value={form.night_time}
+                onFocus={(e) => handleInputFocus("night_time", e.currentTarget)}
+                onChange={(e) => update("night_time", e.target.value)}
+              />
+            </div>
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
